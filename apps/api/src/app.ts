@@ -13,6 +13,9 @@ import { openapi } from './config/openapi.js';
 import { logger } from './utils/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { healthRouter } from './modules/health/health.routes.js';
+import { authRouter } from './modules/auth/auth.routes.js';
+import { sellersRouter } from './modules/sellers/sellers.routes.js';
+import { adminRouter } from './modules/admin/admin.routes.js';
 
 export function createApp() {
   const app = express();
@@ -36,6 +39,9 @@ export function createApp() {
 
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi));
   app.use(`${API_PREFIX}/health`, healthRouter);
+  app.use(`${API_PREFIX}/auth`, authRouter);
+  app.use(`${API_PREFIX}/sellers`, sellersRouter);
+  app.use(`${API_PREFIX}/admin`, adminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

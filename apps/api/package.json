@@ -12,7 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "node --env-file=../../.env ./node_modules/prisma/build/index.js migrate dev",
     "prisma:deploy": "node --env-file=../../.env ./node_modules/prisma/build/index.js migrate deploy",
-    "prisma:seed": "tsx --env-file=../../.env ../../prisma/seed.ts"
+    "prisma:seed": "tsx --env-file=../../.env src/database/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
