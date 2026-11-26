@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { LayoutDashboard, Package, Store, Tags, Users } from 'lucide-react';
+import { LayoutDashboard, Package, Store, Tags, Users, Warehouse } from 'lucide-react';
 import { StorefrontLayout } from '../layouts/StorefrontLayout';
 import { PortalLayout, type NavItem } from '../layouts/PortalLayout';
 import { RequireRole } from '../features/auth/RequireRole';
@@ -21,10 +21,12 @@ import { AdminProductDetailPage } from '../pages/admin/AdminProductDetailPage';
 import { AdminCatalogPage } from '../pages/admin/AdminCatalogPage';
 import { SellerProductsPage } from '../pages/seller/SellerProductsPage';
 import { SellerProductFormPage } from '../pages/seller/SellerProductFormPage';
+import { SellerInventoryPage } from '../pages/seller/SellerInventoryPage';
 
 const sellerNav: NavItem[] = [
   { to: '/seller', label: 'Dashboard', icon: <LayoutDashboard size={18} />, end: true },
   { to: '/seller/products', label: 'Products', icon: <Package size={18} /> },
+  { to: '/seller/inventory', label: 'Inventory', icon: <Warehouse size={18} /> },
   { to: '/seller/store', label: 'Store profile', icon: <Store size={18} /> },
 ];
 
@@ -62,6 +64,7 @@ export const router = createBrowserRouter([
           { path: '/seller/products', element: <SellerProductsPage /> },
           { path: '/seller/products/new', element: <SellerProductFormPage /> },
           { path: '/seller/products/:id', element: <SellerProductFormPage /> },
+          { path: '/seller/inventory', element: <SellerInventoryPage /> },
           { path: '/seller/store', element: <SellerStorePage /> },
         ],
       },

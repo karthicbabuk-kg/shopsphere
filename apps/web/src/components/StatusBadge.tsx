@@ -29,7 +29,7 @@ export function StatusBadge({ status, tone }: { status: string; tone?: Tone }) {
   const t = tone ?? STATUS_TONE[status] ?? 'neutral';
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${TONES[t]}`}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${TONES[t]}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${DOTS[t]}`} aria-hidden="true" />
       {status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, ' ')}

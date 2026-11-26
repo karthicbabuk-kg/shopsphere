@@ -6,6 +6,7 @@ import { audit } from '../../utils/audit.js';
 import { pageArgs, pageMeta } from '../../utils/pagination.js';
 import { uniqueSlug } from '../../utils/slug.js';
 import { createInventoryWithOpening } from '../inventory/inventory.service.js';
+import { requireSeller } from '../sellers/require-seller.js';
 import { assertOwnedAsset, destroyAssets } from '../uploads/cloudinary.service.js';
 
 const detailInclude = {
@@ -19,13 +20,6 @@ const detailInclude = {
     include: { inventory: { select: { available: true, reserved: true, sold: true, reorderLevel: true } } },
   },
 } satisfies Prisma.ProductInclude;
-
-/** Resolves the caller's seller record. Ownership always starts from the authenticated user. */
-export async function requireSeller(userId: string) {
-  const seller = await prisma.seller.findFirst({ where: { userId, deletedAt: null } });
-  if (!seller) throw AppError.forbidden('Seller profile not found');
-  return seller;
-}
 
 async function loadOwnedProduct(sellerId: string, productId: string) {
   // Cross-seller access is indistinguishable from "not found" on purpose.

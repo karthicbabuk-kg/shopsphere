@@ -219,6 +219,46 @@ export const openapi = {
     },
     '/admin/categories': { get: { tags: ['Admin'], summary: 'All categories incl. inactive, with usage counts', security: [{ bearerAuth: [] }], responses: { '200': ok('{ categories }') } }, post: { tags: ['Admin'], summary: 'Create category', security: [{ bearerAuth: [] }], responses: { '201': ok('{ category }'), '409': ok('Duplicate') } } },
     '/admin/brands': { get: { tags: ['Admin'], summary: 'All brands incl. inactive', security: [{ bearerAuth: [] }], responses: { '200': ok('{ brands }') } }, post: { tags: ['Admin'], summary: 'Create brand', security: [{ bearerAuth: [] }], responses: { '201': ok('{ brand }'), '409': ok('Duplicate') } } },
+    '/seller/inventory': {
+      get: { tags: ['Inventory'], summary: 'Stock levels per SKU (q, status IN_STOCK|LOW|OUT, page)', security: [{ bearerAuth: [] }], responses: { '200': ok('{ items } + meta') } },
+    },
+    '/seller/inventory/summary': {
+      get: { tags: ['Inventory'], summary: 'Totals, valuation and alert lists (out of stock, reorder required, discrepancies)', security: [{ bearerAuth: [] }], responses: { '200': ok('Summary') } },
+    },
+    '/seller/inventory/{id}/{operation}': {
+      post: {
+        tags: ['Inventory'],
+        summary: 'inward | outward | adjust | count. Atomic; outward/adjust require a reason; 409 when stock is insufficient',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'operation', in: 'path', required: true, schema: { type: 'string', enum: ['inward', 'outward', 'adjust', 'count'] } },
+        ],
+        responses: { '201': ok('{ previousQty, newQty, referenceNo } or { adjustment }'), '404': ok('Not found or not yours'), '409': ok('Insufficient stock / open count exists'), '422': ok('Validation error') },
+      },
+    },
+    '/seller/stock-movements': {
+      get: { tags: ['Inventory'], summary: 'Immutable stock ledger (type, inventoryId, from, to, page)', security: [{ bearerAuth: [] }], responses: { '200': ok('{ items } + meta') } },
+    },
+    '/seller/stock-adjustments': {
+      get: { tags: ['Inventory'], summary: 'Physical counts (status OPEN|APPLIED|DISMISSED)', security: [{ bearerAuth: [] }], responses: { '200': ok('{ items } + meta') } },
+    },
+    '/seller/stock-adjustments/{id}/{action}': {
+      post: {
+        tags: ['Inventory'],
+        summary: 'apply (reconcile the counted difference) | dismiss',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'action', in: 'path', required: true, schema: { type: 'string', enum: ['apply', 'dismiss'] } },
+        ],
+        responses: { '200': ok('Applied / dismissed'), '409': ok('Already resolved or no longer fits') },
+      },
+    },
+    '/seller/warehouses': {
+      get: { tags: ['Inventory'], summary: 'Own warehouses', security: [{ bearerAuth: [] }], responses: { '200': ok('{ warehouses }') } },
+      post: { tags: ['Inventory'], summary: 'Add a warehouse', security: [{ bearerAuth: [] }], responses: { '201': ok('{ warehouse }'), '409': ok('Duplicate name') } },
+    },
     '/admin/ping': {
       get: {
         tags: ['Admin'],

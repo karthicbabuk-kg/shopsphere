@@ -64,3 +64,19 @@ Not yet implemented from the onboarding spec: store logo and demo document uploa
 - Removing a variant is a soft delete (history kept) and is refused while units are reserved.
 - Re-review: an approved product returns to PENDING when name, description, category, brand or images change (price/stock edits do not); a rejected product returns to PENDING when resubmitted. Suspended products cannot be edited.
 - Image references are accepted only from our Cloudinary cloud and the caller's own folder; without credentials uploads fail with `503 UPLOADS_NOT_CONFIGURED`.
+
+## Implemented (Phase 6) — Inventory (all SELLER, scoped to the token's seller)
+| Method & path | Purpose |
+|---|---|
+| `GET /seller/inventory` | Stock levels per SKU: available / reserved / sold, reorder level, status (`IN_STOCK`, `LOW`, `OUT`), warehouse, open count. Filters `q`, `status`, paging |
+| `GET /seller/inventory/summary` | SKU count, units, low/out counts, open discrepancies, stock value at selling price, alert lists |
+| `POST /seller/inventory/:id/inward` | Add stock `{ quantity, reason?, referenceNo? }` |
+| `POST /seller/inventory/:id/outward` | Remove stock `{ quantity, reason }` (reason required); 409 if more than available |
+| `POST /seller/inventory/:id/adjust` | Manual ± `{ delta, reason }` (reason required); 409 if it would go negative |
+| `POST /seller/inventory/:id/count` | Record a physical count `{ countedQty, reason? }`. A mismatch opens a discrepancy (one open per SKU); a match is recorded as applied |
+| `PATCH /seller/inventory/:id/settings` | `{ reorderLevel, warehouseId? }` |
+| `GET /seller/stock-movements` | The immutable ledger: `type`, `inventoryId`, `from`, `to`, paging; newest first, with the acting user's name |
+| `GET /seller/stock-adjustments`, `POST /seller/stock-adjustments/:id/apply\|dismiss` | List counts; apply the difference as a `RECONCILIATION` movement or dismiss it |
+| `GET/POST /seller/warehouses` | Simplified locations |
+
+Every successful operation returns `{ previousQty, newQty, referenceNo }`. A reference number is generated (`INW-20261126-4D21E0`) when none is supplied. Other sellers' inventory returns 404.

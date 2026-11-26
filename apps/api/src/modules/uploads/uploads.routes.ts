@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { authenticate, requireRole } from '../../middleware/auth.js';
 import { env } from '../../config/env.js';
-import { requireSeller } from '../products/seller-products.service.js';
+import { requireSeller } from '../sellers/require-seller.js';
 import { acceptFiles } from './upload.middleware.js';
 import { sellerFolder, uploadBuffer } from './cloudinary.service.js';
 

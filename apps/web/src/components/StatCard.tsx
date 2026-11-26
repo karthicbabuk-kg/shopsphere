@@ -21,7 +21,7 @@ export function StatCard({
         <p className="font-mono text-xs tracking-wider text-muted uppercase">{label}</p>
         {icon && <span className="text-faint">{icon}</span>}
       </div>
-      <p className="mt-2 font-mono text-3xl font-medium tabular-nums">{value}</p>
+      <p className={`mt-2 font-mono font-medium tabular-nums ${typeof value === 'string' && value.length > 8 ? 'text-2xl' : 'text-3xl'}`}>{value}</p>
       {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
     </div>
   );

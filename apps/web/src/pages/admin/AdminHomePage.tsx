@@ -6,7 +6,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { EmptyState } from '../../components/EmptyState';
 import { useOverview } from '../../features/admin/adminApi';
-import { formatDate, formatINR } from '../../utils/format';
+import { formatDate, formatINRWhole } from '../../utils/format';
 
 export function AdminHomePage() {
   const { data, isLoading, isError } = useOverview();
@@ -52,12 +52,12 @@ export function AdminHomePage() {
         <StatCard label="Orders" value={data.orders.total} icon={<ShoppingBag size={18} />} />
         <StatCard
           label="Gross order value"
-          value={formatINR(data.orders.grossPaise)}
+          value={formatINRWhole(data.orders.grossPaise)}
           icon={<IndianRupee size={18} />}
         />
         <StatCard
           label="Platform commission"
-          value={formatINR(data.commissionPaise)}
+          value={formatINRWhole(data.commissionPaise)}
           icon={<Percent size={18} />}
         />
         <StatCard

@@ -30,6 +30,7 @@ export default async function globalTeardown() {
     await client.query('ALTER TABLE stock_movements DISABLE TRIGGER stock_movements_immutable');
     await client.query(`DELETE FROM stock_movements WHERE "sellerId" IN (${sellerIds})`);
     await client.query('ALTER TABLE stock_movements ENABLE TRIGGER stock_movements_immutable');
+    await client.query(`DELETE FROM stock_adjustments WHERE "inventoryId" IN (SELECT i.id FROM inventories i WHERE i."warehouseId" IN (SELECT id FROM warehouses WHERE "sellerId" IN (${sellerIds})))`);
     await client.query(`DELETE FROM inventories WHERE "warehouseId" IN (SELECT id FROM warehouses WHERE "sellerId" IN (${sellerIds}))`);
     await client.query(`DELETE FROM products WHERE "sellerId" IN (${sellerIds})`);
     await client.query(`DELETE FROM warehouses WHERE "sellerId" IN (${sellerIds})`);

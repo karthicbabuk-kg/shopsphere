@@ -57,6 +57,7 @@ export async function cleanupDomain(domain: string) {
     prisma.stockMovement.deleteMany({ where: sellers }),
     prisma.$executeRawUnsafe('ALTER TABLE stock_movements ENABLE TRIGGER stock_movements_immutable'),
   ]);
+  await prisma.stockAdjustment.deleteMany({ where: { inventory: { warehouse: sellers } } });
   await prisma.inventory.deleteMany({ where: { warehouse: sellers } });
   await prisma.product.deleteMany({ where: sellers });
   await prisma.warehouse.deleteMany({ where: sellers });

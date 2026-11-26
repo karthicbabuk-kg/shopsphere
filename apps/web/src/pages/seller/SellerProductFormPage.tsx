@@ -340,6 +340,7 @@ export function SellerProductFormPage() {
                         label={existing ? 'Available stock' : 'Opening stock'}
                         type="number"
                         disabled={existing}
+                        hint={existing ? 'Change stock in Inventory' : undefined}
                         error={errors.variants?.[i]?.openingStock}
                         slotProps={{ htmlInput: { min: 0 } }}
                         {...register(`variants.${i}.openingStock`, { valueAsNumber: true })}

@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-5 done (design, scaffold, auth, admin + seller approval, catalogue: categories/brands/products/uploads/moderation). Next: Phase 6 (inventory: inward/outward/adjust/reserve/release/reconcile, alerts, ledger UI).
+Phases 1-6 done (catalogue plus inventory: atomic stock ops, ledger, counts/discrepancies, alerts). Next: Phase 7 (buyer storefront: home, catalogue, search/filters, product page).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -44,3 +44,5 @@ Phases 1-5 done (design, scaffold, auth, admin + seller approval, catalogue: cat
 - Seed (`pnpm db:seed`) creates the admin plus 27 categories / 20 brands. Test DB needs the same seed (`DATABASE_URL=$TEST_DATABASE_URL`).
 - Auth rate limit (30/15 min) applies in production only; dev/test are unlimited.
 - API tests mock Cloudinary and blank its credentials; E2E uses the real account from `.env` and deletes its uploads in teardown.
+- Inventory: never UPDATE `inventories` directly; use `applyChange` / `reserveStock` / `releaseStock` / `commitSale` / `restockReturn` (see docs/BUSINESS_LOGIC.md). Order code (Phase 8) must call them inside its transaction.
+- Tests and E2E cleanup delete stock rows by temporarily disabling the immutability trigger inside a transaction; production code never does.

@@ -1,5 +1,9 @@
 export { formatINR } from '@shopsphere/shared-config';
 
+/** Whole-rupee amounts for dashboards where paise are noise. */
+const wholeFmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
+export const formatINRWhole = (paise: number) => wholeFmt.format(paise / 100);
+
 const dateFmt = new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 const dateTimeFmt = new Intl.DateTimeFormat('en-IN', {
   day: '2-digit',

@@ -21,6 +21,12 @@ import { categoriesRouter } from './modules/categories/categories.routes.js';
 import { brandsRouter } from './modules/brands/brands.routes.js';
 import { sellerProductsRouter } from './modules/products/seller-products.routes.js';
 import { uploadsRouter } from './modules/uploads/uploads.routes.js';
+import {
+  inventoryRouter,
+  stockAdjustmentsRouter,
+  stockMovementsRouter,
+  warehousesRouter,
+} from './modules/inventory/inventory.routes.js';
 
 export function createApp() {
   const app = express();
@@ -52,6 +58,10 @@ export function createApp() {
   app.use(`${API_PREFIX}/brands`, brandsRouter);
   app.use(`${API_PREFIX}/seller/products`, sellerProductsRouter);
   app.use(`${API_PREFIX}/uploads`, uploadsRouter);
+  app.use(`${API_PREFIX}/seller/inventory`, inventoryRouter);
+  app.use(`${API_PREFIX}/seller/stock-movements`, stockMovementsRouter);
+  app.use(`${API_PREFIX}/seller/stock-adjustments`, stockAdjustmentsRouter);
+  app.use(`${API_PREFIX}/seller/warehouses`, warehousesRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

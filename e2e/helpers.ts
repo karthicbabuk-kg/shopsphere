@@ -54,3 +54,22 @@ export async function approveSellerByEmail(request: APIRequestContext, email: st
   const res = await request.post(`/api/v1/admin/sellers/${id}/approve`, { headers });
   expect(res.ok()).toBeTruthy();
 }
+
+/** Creates a draft product with one SKU through the product form. Returns after the draft is saved. */
+export async function createDraftProduct(
+  page: Page,
+  o: { name: string; sku: string; stock: number; reorder: number; price?: number },
+) {
+  await page.goto('/seller/products/new');
+  await page.getByLabel('Product name').fill(o.name);
+  await page.getByLabel('Category').click();
+  await page.getByRole('option', { name: 'Laptops' }).click();
+  await page.getByLabel('Description').fill('A product created by the end-to-end tests to exercise inventory features.');
+  await page.getByLabel('MRP (₹)').fill(String((o.price ?? 1000) + 500));
+  await page.getByLabel('Selling price (₹)').fill(String(o.price ?? 1000));
+  await page.getByLabel('SKU', { exact: true }).fill(o.sku);
+  await page.getByLabel('Opening stock').fill(String(o.stock));
+  await page.getByLabel('Reorder level').fill(String(o.reorder));
+  await page.getByRole('button', { name: 'Save draft' }).click();
+  await expect(page.getByText('Draft saved')).toBeVisible();
+}

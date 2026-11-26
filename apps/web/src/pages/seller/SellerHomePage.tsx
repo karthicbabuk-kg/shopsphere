@@ -4,6 +4,8 @@ import Skeleton from '@mui/material/Skeleton';
 import { Check, Circle } from 'lucide-react';
 import { PageHeader } from '../../components/PageHeader';
 import { StatusBadge } from '../../components/StatusBadge';
+import { StatCard } from '../../components/StatCard';
+import { useInventorySummary } from '../../features/inventory/inventoryApi';
 import { useSellerProfile } from '../../features/seller/sellerApi';
 
 const BANNER = {
@@ -18,6 +20,43 @@ const BANNER = {
     text: 'Your store is suspended and your products are hidden. Contact the platform administrator.',
   },
 } as const;
+
+function InventoryWidget() {
+  const { data: s } = useInventorySummary();
+  if (!s || s.skuCount === 0) return null;
+  const attention = s.outOfStockCount + s.lowStockCount + s.openDiscrepancies;
+  return (
+    <section className="rounded-lg border border-line bg-white p-6" aria-labelledby="inv-heading">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="inv-heading" className="text-lg">
+          Inventory
+        </h2>
+        <Link to="/seller/inventory" className="text-sm font-bold text-blue-600">
+          Manage stock
+        </Link>
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-4">
+        <StatCard label="SKUs" value={s.skuCount} />
+        <StatCard label="Units available" value={s.unitsAvailable} />
+        <StatCard label="Reorder needed" value={s.lowStockCount} accent={s.lowStockCount > 0} />
+        <StatCard label="Out of stock" value={s.outOfStockCount} accent={s.outOfStockCount > 0} />
+      </div>
+      {attention === 0 && <p className="mt-4 text-sm text-muted">All stock levels are healthy.</p>}
+      {s.alerts.reorderRequired.length > 0 && (
+        <ul className="mt-4 divide-y divide-line rounded-md border border-line text-sm">
+          {s.alerts.reorderRequired.slice(0, 3).map((a) => (
+            <li key={a.inventoryId} className="flex items-center justify-between gap-3 px-4 py-2">
+              <span className="truncate">{a.productName}</span>
+              <span className="font-mono text-warning">
+                {a.available} left · reorder at {a.reorderLevel}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
 
 export function SellerHomePage() {
   const { data, isLoading, isError } = useSellerProfile();
@@ -56,7 +95,9 @@ export function SellerHomePage() {
         </div>
       </Alert>
 
-      <section className="rounded-lg border border-line bg-white p-6" aria-labelledby="onboarding">
+      <InventoryWidget />
+
+      <section className="mt-6 rounded-lg border border-line bg-white p-6" aria-labelledby="onboarding">
         <h2 id="onboarding" className="mb-4 text-lg">
           Getting started
         </h2>
