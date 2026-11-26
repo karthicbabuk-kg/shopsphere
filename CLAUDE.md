@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-6 done (catalogue plus inventory: atomic stock ops, ledger, counts/discrepancies, alerts). Next: Phase 7 (buyer storefront: home, catalogue, search/filters, product page).
+Phases 1-7 done (…inventory, storefront with search/filters/product page, wishlist, cart, demo data). Next: Phase 8 (checkout, payments, multi-seller orders, tracking, cancel/return, reviews).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -46,3 +46,8 @@ Phases 1-6 done (catalogue plus inventory: atomic stock ops, ledger, counts/disc
 - API tests mock Cloudinary and blank its credentials; E2E uses the real account from `.env` and deletes its uploads in teardown.
 - Inventory: never UPDATE `inventories` directly; use `applyChange` / `reserveStock` / `releaseStock` / `commitSale` / `restockReturn` (see docs/BUSINESS_LOGIC.md). Order code (Phase 8) must call them inside its transaction.
 - Tests and E2E cleanup delete stock rows by temporarily disabling the immutability trigger inside a transaction; production code never does.
+
+- Demo data: `pnpm db:seed` then `pnpm --filter @shopsphere/api demo:seed`. Product images are generated illustrations (`apps/api/scripts/`), URLs in `demo-images.json`. Test DB needs `db:seed` only.
+- Storefront visibility has ONE definition, `visibleProduct`; reuse it for anything buyer-facing.
+- Money in the UI uses sans tabular numerals (DM Mono spaces out digit groups); `formatINR` drops ".00" for whole rupees.
+- Cart/wishlist need a BUYER account; sellers and admins get an explanatory toast. `/checkout` is a temporary page until Phase 8.

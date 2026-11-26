@@ -2,8 +2,14 @@ export const API_PREFIX = '/api/v1';
 
 /** Money is always integer paise. */
 export const toPaise = (rupees: number): number => Math.round(rupees * 100);
+/** ₹1,299 for whole rupees, ₹1,299.50 when paise are present. */
 export const formatINR = (paise: number): string =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(paise / 100);
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: paise % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(paise / 100);
 
 export const tokens = {
   color: {

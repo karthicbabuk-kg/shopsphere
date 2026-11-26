@@ -19,8 +19,8 @@ const CATEGORIES: { name: string; children?: string[] }[] = [
 ];
 
 const BRANDS = [
-  'Apple', 'Samsung', 'OnePlus', 'boAt', 'Sony', 'Lenovo', 'HP', 'Nike', 'Puma', 'Wildcraft',
-  'Prestige', 'Philips', 'Godrej', 'Nilkamal', 'Wakefit', 'Lakme', 'Nivea', 'Titan', 'Fastrack', 'Generic',
+  'Aurora', 'NovaTech', 'Pulse Audio', 'Zenith', 'Kairo', 'Veloce', 'Hearth & Co', 'Brewmate', 'UrbanEdge', 'Threadly',
+  'Stride', 'Oakline', 'Dwell', 'Glowlab', 'Pure Roots', 'Soleil', 'Peak Active', 'Nomad Gear', 'Tickwell', 'Generic',
 ];
 
 async function seedAdmin() {
@@ -67,6 +67,8 @@ async function seedTaxonomy() {
       create: { name, slug: slugify(name) },
     });
   }
+  // Earlier versions seeded real-world brand names; keep only the fictional demo brands.
+  await prisma.brand.deleteMany({ where: { slug: { notIn: BRANDS.map((n) => slugify(n)) }, products: { none: {} } } });
   console.warn(`Categories: ${await prisma.category.count()}, brands: ${await prisma.brand.count()}`);
 }
 

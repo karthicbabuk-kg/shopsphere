@@ -30,3 +30,15 @@ Rules that the code enforces. Extended each phase; the order, commission and ret
 **Valuation** is available units × selling price (variant price, else product price); cost price is not tracked.
 
 **Edits through the product form never change quantities** of existing SKUs; only opening stock of newly added SKUs is recorded.
+
+## Storefront visibility (Phase 7)
+A product is publicly visible only if it is `ACTIVE`, `APPROVED`, not deleted, in an active category, and its seller is `APPROVED`. The single definition lives in `visibleProduct` (`storefront.service.ts`) and is reused by the product list, search suggestions, detail, home sections, related products, wishlist and cart. Suspending a seller or deactivating a category therefore hides products everywhere at once, and carts holding them show an "unavailable" line instead of silently dropping it.
+
+## Cart (Phase 7)
+- Only buyer accounts have carts; anonymous visitors are sent to sign in and return to the page they were on.
+- The client sends only `variantId` and `quantity`. Prices come from the database at read time, so a seller changing a price is reflected immediately and a tampered request cannot change a price.
+- Limits: at most 10 per line and never more than the available stock (409 with `available`). Adding the same variant merges quantities.
+- Each line is checked on every read: `UNAVAILABLE` (hidden/removed), `OUT_OF_STOCK`, or `INSUFFICIENT` (quantity above stock). Problem lines stay visible but are excluded from totals and block checkout. The cart does **not** reserve stock; reservation happens when the order is placed (Phase 8).
+- Totals (integer paise, `cart.calc.ts`): subtotal = Σ price × quantity; savings = MRP total − subtotal; delivery is charged **per seller shipment** (`deliveryFeePaise`, default ₹49) and waived when that seller's subtotal reaches `freeDeliveryThresholdPaise` (default ₹499); prices are GST-inclusive, so the tax shown is the portion already inside the total, `total × rate / (100% + rate)`, rounded half up; grand total = subtotal + delivery.
+- Minimum order value (`minOrderPaise`, default ₹199) must be met to check out.
+- Defaults live in `settings.service.ts`; rows in `platform_settings` override them (an admin settings screen arrives with the reports phase).

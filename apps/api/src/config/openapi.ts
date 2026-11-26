@@ -259,6 +259,32 @@ export const openapi = {
       get: { tags: ['Inventory'], summary: 'Own warehouses', security: [{ bearerAuth: [] }], responses: { '200': ok('{ warehouses }') } },
       post: { tags: ['Inventory'], summary: 'Add a warehouse', security: [{ bearerAuth: [] }], responses: { '201': ok('{ warehouse }'), '409': ok('Duplicate name') } },
     },
+    '/products': {
+      get: {
+        tags: ['Storefront'],
+        summary: 'Search and list visible products (q, category, store, brand, minPrice, maxPrice, rating, inStock, sort, page, facets)',
+        responses: { '200': ok('{ items, facets?, category } + meta'), '404': ok('Unknown category'), '422': ok('Invalid query') },
+      },
+    },
+    '/products/suggest': { get: { tags: ['Storefront'], summary: 'Search suggestions (products, categories, brands)', parameters: [{ name: 'q', in: 'query', required: true, schema: { type: 'string' } }], responses: { '200': ok('Suggestions') } } },
+    '/products/{slug}': { get: { tags: ['Storefront'], summary: 'Product detail with variants, seller, review summary and related products', parameters: [{ name: 'slug', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': ok('{ product }'), '404': ok('Not visible') } } },
+    '/products/{slug}/reviews': { get: { tags: ['Storefront'], summary: 'Reviews (sort recent|high|low, page)', parameters: [{ name: 'slug', in: 'path', required: true, schema: { type: 'string' } }], responses: { '200': ok('{ items } + meta') } } },
+    '/storefront/home': { get: { tags: ['Storefront'], summary: 'Home page sections and category counts', responses: { '200': ok('Home data') } } },
+    '/coupons/active': { get: { tags: ['Storefront'], summary: 'Currently valid coupons', responses: { '200': ok('{ coupons }') } } },
+    '/cart': {
+      get: { tags: ['Cart'], summary: 'Cart grouped by seller with server-side totals and line issues', security: [{ bearerAuth: [] }], responses: { '200': ok('Cart'), '403': ok('Buyers only') } },
+      delete: { tags: ['Cart'], summary: 'Clear the cart', security: [{ bearerAuth: [] }], responses: { '200': ok('Empty cart') } },
+    },
+    '/cart/items': { post: { tags: ['Cart'], summary: 'Add { variantId, quantity }; merges; 409 when above stock', security: [{ bearerAuth: [] }], responses: { '201': ok('Cart'), '404': ok('Unavailable'), '409': ok('Insufficient stock') } } },
+    '/cart/items/{id}': {
+      patch: { tags: ['Cart'], summary: 'Set quantity', security: [{ bearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '200': ok('Cart'), '409': ok('Insufficient stock') } },
+      delete: { tags: ['Cart'], summary: 'Remove a line (own cart only)', security: [{ bearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '200': ok('Cart'), '404': ok('Not found') } },
+    },
+    '/wishlist': { get: { tags: ['Wishlist'], summary: 'Saved products', security: [{ bearerAuth: [] }], responses: { '200': ok('{ items, ids }') } } },
+    '/wishlist/{productId}': {
+      post: { tags: ['Wishlist'], summary: 'Save a product (idempotent)', security: [{ bearerAuth: [] }], parameters: [{ name: 'productId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '201': ok('{ items, ids }'), '404': ok('Not visible') } },
+      delete: { tags: ['Wishlist'], summary: 'Remove a saved product', security: [{ bearerAuth: [] }], parameters: [{ name: 'productId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '200': ok('{ items, ids }') } },
+    },
     '/admin/ping': {
       get: {
         tags: ['Admin'],

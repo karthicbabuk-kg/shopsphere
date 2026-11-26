@@ -67,3 +67,59 @@ export async function cleanupDomain(domain: string) {
 export async function anyCategoryId() {
   return (await prisma.category.findFirstOrThrow({ where: { parentId: { not: null }, active: true } })).id;
 }
+
+/** Creates a product through the seller API and publishes it (ACTIVE + APPROVED) directly in the DB. */
+export async function publishProduct(
+  app: Express,
+  seller: { auth: { Authorization: string } },
+  categoryId: string,
+  o: {
+    name: string;
+    price?: number; // rupees
+    mrp?: number;
+    stock?: number;
+    brandId?: string | null;
+    variants?: { sku?: string; label?: string; stock?: number; price?: number }[];
+    soldCount?: number;
+    rating?: number;
+    createdAt?: Date;
+    publish?: boolean;
+  },
+) {
+  const price = o.price ?? 1000;
+  const variants = (o.variants ?? [{}]).map((v, i) => ({
+    sku: v.sku ?? `PUB-${uniq()}-${i}`.toUpperCase(),
+    label: v.label ?? 'Default',
+    openingStock: v.stock ?? o.stock ?? 10,
+    reorderLevel: 2,
+    ...(v.price ? { pricePaise: v.price * 100 } : {}),
+  }));
+  const res = await request(app)
+    .post('/api/v1/seller/products')
+    .set(seller.auth)
+    .send({
+      name: o.name,
+      description: 'A product published for storefront tests with a long enough description.',
+      categoryId,
+      brandId: o.brandId ?? null,
+      mrpPaise: (o.mrp ?? price + 500) * 100,
+      pricePaise: price * 100,
+      status: 'DRAFT',
+      variants,
+    });
+  if (res.status !== 201) throw new Error(`publishProduct failed: ${res.status} ${JSON.stringify(res.body)}`);
+  const product = res.body.data.product;
+  if (o.publish !== false) {
+    await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        status: 'ACTIVE',
+        approval: 'APPROVED',
+        ...(o.soldCount !== undefined ? { soldCount: o.soldCount } : {}),
+        ...(o.rating !== undefined ? { ratingAvg: o.rating, ratingCount: 3 } : {}),
+        ...(o.createdAt ? { createdAt: o.createdAt } : {}),
+      },
+    });
+  }
+  return { id: product.id as string, slug: product.slug as string, variants: product.variants as { id: string; sku: string }[] };
+}

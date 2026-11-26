@@ -18,8 +18,8 @@ Neutral canvas + single blue accent, DM Sans/DM Mono, tonal rounded cards, proce
 | 4 | Admin shell, seller registration/approval | seller approval flow works |
 | 5 | Categories, brands, product CRUD, Cloudinary uploads, product approval | seller→admin approval verified |
 | 6 | Inventory ledger, adjustments, alerts | concurrency + ledger tests pass |
-| 7 | Storefront: home, catalogue, search/filters, product page | real data, Lighthouse baseline |
-| 8 | Cart, wishlist, checkout, demo payments, orders, tracking, cancel/return | multi-seller order test passes |
+| 7 | Storefront: home, catalogue, search/filters, product page, **plus wishlist and cart** (moved from Phase 8) and the demo catalogue (39 products, images, reviews) | real data, E2E for browse and cart journeys |
+| 8 | Checkout (addresses, coupons, demo payments), multi-seller orders, tracking, seller fulfilment, cancel/return, review submission | multi-seller order test passes |
 | 9 | Analytics, reports, commissions, CSV export, charts | numbers reconcile with DB |
 | 10 | QA, Playwright E2E, responsive, security, perf | full suite green |
 | 11 | Neon, Render, Cloudflare Pages, live verification | live E2E OK |

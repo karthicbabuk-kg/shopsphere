@@ -1,27 +1,19 @@
-import { createBrowserRouter } from 'react-router-dom';
+import type { ComponentType } from 'react';
+import { createBrowserRouter, type RouteObject } from 'react-router-dom';
 import { LayoutDashboard, Package, Store, Tags, Users, Warehouse } from 'lucide-react';
+import CircularProgress from '@mui/material/CircularProgress';
 import { StorefrontLayout } from '../layouts/StorefrontLayout';
 import { PortalLayout, type NavItem } from '../layouts/PortalLayout';
 import { RequireRole } from '../features/auth/RequireRole';
 import { HomePage } from '../pages/storefront/HomePage';
-import { NotFoundPage } from '../pages/NotFoundPage';
-import { LoginPage } from '../pages/auth/LoginPage';
-import { RegisterPage } from '../pages/auth/RegisterPage';
-import { SellerRegisterPage } from '../pages/auth/SellerRegisterPage';
-import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from '../pages/auth/ResetPasswordPage';
-import { AccountPage } from '../pages/buyer/AccountPage';
-import { SellerHomePage } from '../pages/seller/SellerHomePage';
-import { SellerStorePage } from '../pages/seller/SellerStorePage';
-import { AdminHomePage } from '../pages/admin/AdminHomePage';
-import { AdminSellersPage } from '../pages/admin/AdminSellersPage';
-import { AdminSellerDetailPage } from '../pages/admin/AdminSellerDetailPage';
-import { AdminProductsPage } from '../pages/admin/AdminProductsPage';
-import { AdminProductDetailPage } from '../pages/admin/AdminProductDetailPage';
-import { AdminCatalogPage } from '../pages/admin/AdminCatalogPage';
-import { SellerProductsPage } from '../pages/seller/SellerProductsPage';
-import { SellerProductFormPage } from '../pages/seller/SellerProductFormPage';
-import { SellerInventoryPage } from '../pages/seller/SellerInventoryPage';
+
+/**
+ * Route-level code splitting: only the home page ships in the first bundle. Each page below is
+ * fetched when first visited. `page()` adapts a named export to React Router's lazy contract.
+ */
+const page = <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M): Pick<RouteObject, 'lazy'> => ({
+  lazy: async () => ({ Component: (await load())[name] as ComponentType }),
+});
 
 const sellerNav: NavItem[] = [
   { to: '/seller', label: 'Dashboard', icon: <LayoutDashboard size={18} />, end: true },
@@ -40,18 +32,31 @@ const adminNav: NavItem[] = [
 export const router = createBrowserRouter([
   {
     element: <StorefrontLayout />,
+    hydrateFallbackElement: (
+      <div className="grid min-h-[40vh] place-items-center">
+        <CircularProgress size={28} />
+      </div>
+    ),
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
-      { path: '/seller/register', element: <SellerRegisterPage /> },
-      { path: '/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/search', ...page(() => import('../pages/storefront/ListingPage'), 'ListingPage') },
+      { path: '/c/:slug', ...page(() => import('../pages/storefront/ListingPage'), 'ListingPage') },
+      { path: '/p/:slug', ...page(() => import('../pages/storefront/ProductPage'), 'ProductPage') },
+      { path: '/login', ...page(() => import('../pages/auth/LoginPage'), 'LoginPage') },
+      { path: '/register', ...page(() => import('../pages/auth/RegisterPage'), 'RegisterPage') },
+      { path: '/seller/register', ...page(() => import('../pages/auth/SellerRegisterPage'), 'SellerRegisterPage') },
+      { path: '/forgot-password', ...page(() => import('../pages/auth/ForgotPasswordPage'), 'ForgotPasswordPage') },
+      { path: '/reset-password', ...page(() => import('../pages/auth/ResetPasswordPage'), 'ResetPasswordPage') },
       {
         element: <RequireRole roles={['BUYER']} />,
-        children: [{ path: '/account', element: <AccountPage /> }],
+        children: [
+          { path: '/account', ...page(() => import('../pages/buyer/AccountPage'), 'AccountPage') },
+          { path: '/wishlist', ...page(() => import('../pages/storefront/WishlistPage'), 'WishlistPage') },
+          { path: '/cart', ...page(() => import('../pages/storefront/CartPage'), 'CartPage') },
+          { path: '/checkout', ...page(() => import('../pages/storefront/CheckoutPage'), 'CheckoutPage') },
+        ],
       },
-      { path: '*', element: <NotFoundPage /> },
+      { path: '*', ...page(() => import('../pages/NotFoundPage'), 'NotFoundPage') },
     ],
   },
   {
@@ -60,12 +65,12 @@ export const router = createBrowserRouter([
       {
         element: <PortalLayout title="Seller portal" nav={sellerNav} />,
         children: [
-          { path: '/seller', element: <SellerHomePage /> },
-          { path: '/seller/products', element: <SellerProductsPage /> },
-          { path: '/seller/products/new', element: <SellerProductFormPage /> },
-          { path: '/seller/products/:id', element: <SellerProductFormPage /> },
-          { path: '/seller/inventory', element: <SellerInventoryPage /> },
-          { path: '/seller/store', element: <SellerStorePage /> },
+          { path: '/seller', ...page(() => import('../pages/seller/SellerHomePage'), 'SellerHomePage') },
+          { path: '/seller/products', ...page(() => import('../pages/seller/SellerProductsPage'), 'SellerProductsPage') },
+          { path: '/seller/products/new', ...page(() => import('../pages/seller/SellerProductFormPage'), 'SellerProductFormPage') },
+          { path: '/seller/products/:id', ...page(() => import('../pages/seller/SellerProductFormPage'), 'SellerProductFormPage') },
+          { path: '/seller/inventory', ...page(() => import('../pages/seller/SellerInventoryPage'), 'SellerInventoryPage') },
+          { path: '/seller/store', ...page(() => import('../pages/seller/SellerStorePage'), 'SellerStorePage') },
         ],
       },
     ],
@@ -76,12 +81,12 @@ export const router = createBrowserRouter([
       {
         element: <PortalLayout title="Admin portal" nav={adminNav} />,
         children: [
-          { path: '/admin', element: <AdminHomePage /> },
-          { path: '/admin/sellers', element: <AdminSellersPage /> },
-          { path: '/admin/sellers/:id', element: <AdminSellerDetailPage /> },
-          { path: '/admin/products', element: <AdminProductsPage /> },
-          { path: '/admin/products/:id', element: <AdminProductDetailPage /> },
-          { path: '/admin/catalog', element: <AdminCatalogPage /> },
+          { path: '/admin', ...page(() => import('../pages/admin/AdminHomePage'), 'AdminHomePage') },
+          { path: '/admin/sellers', ...page(() => import('../pages/admin/AdminSellersPage'), 'AdminSellersPage') },
+          { path: '/admin/sellers/:id', ...page(() => import('../pages/admin/AdminSellerDetailPage'), 'AdminSellerDetailPage') },
+          { path: '/admin/products', ...page(() => import('../pages/admin/AdminProductsPage'), 'AdminProductsPage') },
+          { path: '/admin/products/:id', ...page(() => import('../pages/admin/AdminProductDetailPage'), 'AdminProductDetailPage') },
+          { path: '/admin/catalog', ...page(() => import('../pages/admin/AdminCatalogPage'), 'AdminCatalogPage') },
         ],
       },
     ],

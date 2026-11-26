@@ -57,7 +57,7 @@ test('seller creates a draft product with SKUs and opening stock', async ({ page
   await page.getByRole('link', { name: 'All products' }).click();
   const row = page.getByRole('row', { name: new RegExp(name) });
   await expect(row).toBeVisible();
-  await expect(row).toContainText('₹45,000.00');
+  await expect(row).toContainText('₹45,000');
   await expect(row).toContainText('12');
 
   // A seller whose store is approved can now submit (button enabled after approval).
@@ -84,6 +84,7 @@ test('uploading without server credentials shows an honest error', async ({ page
 test('admin manages categories and brands', async ({ page }) => {
   const stamp = stampOf();
   await signIn(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+  await expect(page).toHaveURL(/\/admin$/);
   await page.getByRole('link', { name: 'Catalogue' }).click();
   await expect(page.getByRole('heading', { name: 'Catalogue' })).toBeVisible();
   await expect(page.getByRole('cell', { name: /^Electronics/ })).toBeVisible();
@@ -145,7 +146,8 @@ test('full flow with images: submit, admin approves, seller sees live status', a
   const adminCtx = await browser.newContext();
   const admin = await adminCtx.newPage();
   await signIn(admin, ADMIN_EMAIL, ADMIN_PASSWORD);
-  await admin.getByRole('link', { name: 'Products' }).click();
+  await expect(admin).toHaveURL(/\/admin$/);
+  await admin.getByRole('link', { name: 'Products', exact: true }).click();
   await admin.getByLabel('Search by product, SKU or store').fill(name);
   await admin.getByRole('link', { name }).click();
   await admin.getByRole('button', { name: 'Approve' }).click();

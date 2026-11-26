@@ -80,3 +80,22 @@ Not yet implemented from the onboarding spec: store logo and demo document uploa
 | `GET/POST /seller/warehouses` | Simplified locations |
 
 Every successful operation returns `{ previousQty, newQty, referenceNo }`. A reference number is generated (`INW-20261126-4D21E0`) when none is supplied. Other sellers' inventory returns 404.
+
+## Implemented (Phase 7) — Storefront, wishlist, cart
+Public catalogue reads send `Cache-Control: public, max-age=30`; cart and wishlist are `no-store`.
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /products` | – | Search and list. `q` (every word must match name, SKU, brand or category), `category` (slug; a parent includes its children), `store` (store slug), `brand` (comma list), `minPrice`/`maxPrice` (paise), `rating` (min), `inStock`, `sort` (`popular`, `newest`, `price_asc`, `price_desc`, `rating`), `page`, `pageSize`, `facets=true` |
+| `GET /products/suggest?q=` | – | Up to 6 products plus matching categories and brands |
+| `GET /products/:slug` | – | Detail: images, specs, variants with stock hints, seller card, review summary, related products |
+| `GET /products/:slug/reviews` | – | Paged reviews (`sort`: `recent`, `high`, `low`); authors are shown as "Priya N." |
+| `GET /storefront/home` | – | Category counts and the home sections (trending, best sellers, new arrivals, offers, recommended, stores) |
+| `GET /coupons/active` | – | Currently valid offers |
+| `GET /cart` | BUYER | Items grouped by seller, per-line issues, totals, `canCheckout` |
+| `POST /cart/items` | BUYER | `{ variantId, quantity }`; merges with an existing line |
+| `PATCH /cart/items/:id`, `DELETE /cart/items/:id`, `DELETE /cart` | BUYER | Set quantity / remove / clear |
+| `GET /wishlist`, `POST /wishlist/:productId`, `DELETE /wishlist/:productId` | BUYER | Saved products (idempotent add/remove) |
+
+**Facets** (`facets=true`) return brand counts that ignore the brand filter and a price range that ignores the price filter, so the filter panel can always show alternatives.
+**Stock disclosure:** variants expose an exact `leftCount` only when 10 or fewer remain; otherwise only `inStock`.

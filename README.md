@@ -2,7 +2,7 @@
 
 Premium multi-vendor e-commerce and inventory management demo: buyer storefront, seller portal and super-admin portal on one Express API and one PostgreSQL database. Payments are simulated; no real money moves.
 
-> Status: Phase 6 complete (inventory management). See `docs/PROJECT_OVERVIEW.md` for the roadmap.
+> Status: Phase 7 complete (storefront, wishlist, cart, demo catalogue). See `docs/PROJECT_OVERVIEW.md` for the roadmap.
 
 ## Stack
 React 19 · TypeScript 5.9 · Vite 8 · Tailwind 4 · MUI 9 · TanStack Query · React Hook Form + Zod · Framer Motion · Recharts · Lucide  
@@ -17,6 +17,8 @@ cp .env.example .env        # then set real random secrets/passwords
 pnpm db:up                  # Postgres in Docker on localhost:5433
 pnpm --filter @shopsphere/api prisma:generate
 pnpm db:migrate             # apply Prisma migrations
+pnpm db:seed                # admin, categories, brands
+pnpm --filter @shopsphere/api demo:seed   # demo sellers, buyers, 39 products
 pnpm dev                    # API http://localhost:4000, web http://localhost:5173
 ```
 
