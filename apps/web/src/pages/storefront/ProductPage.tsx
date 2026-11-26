@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
@@ -68,7 +69,8 @@ export function ProductPage() {
   const cart = useCartMutations();
   const [variantId, setVariantId] = useState<string | null>(null);
   const [qty, setQty] = useState(1);
-  const [tab, setTab] = useState<'description' | 'specs' | 'reviews'>('description');
+  const [search] = useSearchParams();
+  const [tab, setTab] = useState<'description' | 'specs' | 'reviews'>(search.get('tab') === 'reviews' ? 'reviews' : 'description');
 
   useEffect(() => {
     if (!p) return;
@@ -221,7 +223,7 @@ export function ProductPage() {
             </dl>
           )
         )}
-        {tab === 'reviews' && <ReviewsPanel slug={p.slug} summary={p.reviewSummary} />}
+        {tab === 'reviews' && <ReviewsPanel productId={p.id} slug={p.slug} summary={p.reviewSummary} />}
       </section>
 
       <ProductRail title="You may also like" subtitle="More from this category" items={p.related} />

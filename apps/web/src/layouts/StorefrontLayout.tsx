@@ -42,6 +42,7 @@ function AccountMenu() {
       </Button>
       <Menu anchorEl={anchor} open={!!anchor} onClose={close}>
         {user.role === 'BUYER' && <MenuItem onClick={go('/account')}>My account</MenuItem>}
+        {user.role === 'BUYER' && <MenuItem onClick={go('/account/orders')}>My orders</MenuItem>}
         {user.role === 'BUYER' && <MenuItem onClick={go('/wishlist')}>Wishlist</MenuItem>}
         {user.role !== 'BUYER' && <MenuItem onClick={go(homeFor(user.role))}>{user.role === 'ADMIN' ? 'Admin console' : 'Seller dashboard'}</MenuItem>}
         <MenuItem onClick={() => { close(); void logout().then(() => navigate('/')); }}>Sign out</MenuItem>

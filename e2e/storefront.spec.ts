@@ -120,7 +120,7 @@ test('guests are sent to sign in when they try to buy', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
 });
 
-test('buyer journey: wishlist, cart quantities, totals, delivery rules and checkout hand-off', async ({ page }) => {
+test('buyer journey: wishlist, cart quantities, totals, delivery rules and reaching checkout', async ({ page }) => {
   const errors: string[] = [];
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   const stamp = stampOf();
@@ -179,7 +179,8 @@ test('buyer journey: wishlist, cart quantities, totals, delivery rules and check
 
   await page.getByRole('button', { name: 'Proceed to checkout' }).click();
   await expect(page).toHaveURL(/\/checkout$/);
-  await expect(page.getByText(/is valid and ready/)).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Checkout' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Delivery address' })).toBeVisible();
 
   expect(errors, errors.join('\n')).toEqual([]);
 });

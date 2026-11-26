@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
 export const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL!;
@@ -72,4 +73,52 @@ export async function createDraftProduct(
   await page.getByLabel('Reorder level').fill(String(o.reorder));
   await page.getByRole('button', { name: 'Save draft' }).click();
   await expect(page.getByText('Draft saved')).toBeVisible();
+}
+
+// ───────── Orders: API/DB shortcuts so the UI test can focus on the purchase journey ─────────
+
+async function withDb<T>(fn: (c: import('pg').Client) => Promise<T>): Promise<T> {
+  const require = createRequire(new URL('../apps/api/package.json', import.meta.url));
+  const { Client } = require('pg') as typeof import('pg');
+  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  try {
+    return await fn(client);
+  } finally {
+    await client.end();
+  }
+}
+
+/**
+ * Registers an approved seller with one live product (created through the API, then published in the
+ * database because the image-based review step is covered by the catalogue tests). Isolated from the
+ * demo catalogue so order tests never consume demo stock.
+ */
+export async function createSellerWithLiveProduct(request: APIRequestContext, stamp: string, o: { price: number; stock: number }) {
+  const email = `seller-${stamp}@e2e.local`;
+  const reg = await request.post('/api/v1/auth/register-seller', {
+    data: { name: 'E2E Seller', email, password: PASSWORD, phone: '9876543210', businessName: `E2E Traders ${stamp}`, storeName: `E2E Store ${stamp}` },
+  });
+  expect(reg.ok()).toBeTruthy();
+  const token = (await reg.json()).data.accessToken as string;
+  await approveSellerByEmail(request, email);
+
+  const categoryId = await withDb(async (c) => (await c.query(`SELECT id FROM categories WHERE "parentId" IS NOT NULL AND active LIMIT 1`)).rows[0].id as string);
+  const name = `E2E Order Gadget ${stamp}`;
+  const created = await request.post('/api/v1/seller/products', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: {
+      name,
+      description: 'A product created for the end-to-end order journey, long enough to pass validation.',
+      categoryId,
+      mrpPaise: (o.price + 200) * 100,
+      pricePaise: o.price * 100,
+      status: 'DRAFT',
+      variants: [{ sku: `E2E-${stamp}`.toUpperCase(), label: 'Default', openingStock: o.stock, reorderLevel: 1 }],
+    },
+  });
+  expect(created.status()).toBe(201);
+  const product = (await created.json()).data.product as { id: string; slug: string };
+  await withDb((c) => c.query(`UPDATE products SET status = 'ACTIVE', approval = 'APPROVED' WHERE id = $1`, [product.id]));
+  return { email, name, slug: product.slug, productId: product.id };
 }

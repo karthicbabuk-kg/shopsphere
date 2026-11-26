@@ -25,6 +25,9 @@ import { productsRouter, storefrontRouter } from './modules/storefront/storefron
 import { cartRouter } from './modules/cart/cart.routes.js';
 import { couponsRouter } from './modules/coupons/coupons.routes.js';
 import { wishlistRouter } from './modules/wishlist/wishlist.routes.js';
+import { addressesRouter } from './modules/addresses/addresses.routes.js';
+import { checkoutRouter, ordersRouter, sellerOrdersRouter } from './modules/orders/orders.routes.js';
+import { reviewsRouter } from './modules/reviews/reviews.routes.js';
 import {
   inventoryRouter,
   stockAdjustmentsRouter,
@@ -67,6 +70,11 @@ export function createApp() {
   app.use(`${API_PREFIX}/coupons`, couponsRouter);
   app.use(`${API_PREFIX}/cart`, cartRouter);
   app.use(`${API_PREFIX}/wishlist`, wishlistRouter);
+  app.use(`${API_PREFIX}/addresses`, addressesRouter);
+  app.use(`${API_PREFIX}/checkout`, checkoutRouter);
+  app.use(`${API_PREFIX}/orders`, ordersRouter);
+  app.use(`${API_PREFIX}/reviews`, reviewsRouter);
+  app.use(`${API_PREFIX}/seller/orders`, sellerOrdersRouter);
   app.use(`${API_PREFIX}/seller/inventory`, inventoryRouter);
   app.use(`${API_PREFIX}/seller/stock-movements`, stockMovementsRouter);
   app.use(`${API_PREFIX}/seller/stock-adjustments`, stockAdjustmentsRouter);

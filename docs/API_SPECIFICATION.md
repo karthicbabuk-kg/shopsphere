@@ -99,3 +99,22 @@ Public catalogue reads send `Cache-Control: public, max-age=30`; cart and wishli
 
 **Facets** (`facets=true`) return brand counts that ignore the brand filter and a price range that ignores the price filter, so the filter panel can always show alternatives.
 **Stock disclosure:** variants expose an exact `leftCount` only when 10 or fewer remain; otherwise only `inStock`.
+
+## Checkout, orders and reviews (Phase 8)
+All buyer routes are scoped to the token's user; another buyer's ids return `404`. Seller routes are scoped to the token's seller.
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET/POST /addresses`, `PATCH/DELETE /addresses/:id`, `POST /addresses/:id/default` | BUYER | Address book (max 10, soft delete, first address is default) |
+| `POST /checkout/quote` | BUYER | `{ couponCode? }` returns server-side subtotal, discount, delivery, GST, total and per-seller shipments. Coupon problems return `400` with a readable message |
+| `POST /orders` | BUYER | `{ addressId, paymentMethod: UPI, CARD or COD, couponCode?, demoOutcome?, expectedTotalPaise? }` with optional `Idempotency-Key` header. `201` new order, `200` replay of the same key, `409` stock or price changed (`details.totalPaise`), `402 PAYMENT_FAILED` for a declined demo payment (nothing is created) |
+| `GET /orders?filter=ALL, ACTIVE, DELIVERED, CANCELLED or RETURNS` | BUYER | Paged order history |
+| `GET /orders/:id` | BUYER | Order with shipments, item snapshots, tracking timeline, payment, refunds |
+| `POST /orders/:id/cancel` | BUYER | `{ reason }` cancels every shipment not yet shipped |
+| `POST /orders/:id/shipments/:sid/cancel`, `.../return` | BUYER | Cancel one shipment before dispatch / request a return within 7 days of delivery |
+| `GET /seller/orders?filter=&q=` | SELLER | Own shipments with status counts |
+| `GET /seller/orders/:id` | SELLER | Shipment, ship-to address, payment, commission and the list of allowed `actions` |
+| `POST /seller/orders/:id/actions` | SELLER | `{ action: accept, process, pack, ship, deliver, cancel, approve_return, reject_return or receive_return; carrier?, trackingNo?, reason? }` |
+| `GET /reviews/mine/:productId`, `PUT /reviews/:productId` | BUYER | Eligibility (a delivered order contains the product) and create or update the buyer's single review; the product rating is recalculated |
+
+No card number, UPI id or other payment credential is ever sent or stored. `demoOutcome` (`SUCCESS` or `FAIL`) simulates the gateway result.

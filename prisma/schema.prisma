@@ -549,6 +549,7 @@ model SellerOrder {
   orderId         String            @db.Uuid
   sellerId        String            @db.Uuid
   subtotalPaise   Int
+  discountPaise   Int               @default(0)
   taxPaise        Int               @default(0)
   deliveryPaise   Int               @default(0)
   totalPaise      Int

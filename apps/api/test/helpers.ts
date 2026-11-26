@@ -51,6 +51,24 @@ export async function makeBuyer(app: Express, domain: string) {
 /** Removes everything created under a test email domain, in FK-safe order. */
 export async function cleanupDomain(domain: string) {
   const sellers = { seller: { user: { email: { endsWith: domain } } } };
+  // Orders touching a test buyer or a test seller go first (they reference users, sellers and variants).
+  const orders = await prisma.order.findMany({
+    where: { OR: [{ buyer: { email: { endsWith: domain } } }, { sellerOrders: { some: sellers } }] },
+    select: { id: true },
+  });
+  const orderIds = orders.map((o) => o.id);
+  if (orderIds.length) {
+    const sellerOrder = { sellerOrder: { orderId: { in: orderIds } } };
+    await prisma.orderStatusHistory.deleteMany({ where: sellerOrder });
+    await prisma.commission.deleteMany({ where: sellerOrder });
+    await prisma.refund.deleteMany({ where: { payment: { orderId: { in: orderIds } } } });
+    await prisma.orderItem.deleteMany({ where: sellerOrder });
+    await prisma.sellerOrder.deleteMany({ where: { orderId: { in: orderIds } } });
+    await prisma.payment.deleteMany({ where: { orderId: { in: orderIds } } });
+    await prisma.couponUsage.deleteMany({ where: { orderId: { in: orderIds } } });
+    await prisma.order.deleteMany({ where: { id: { in: orderIds } } });
+  }
+  await prisma.review.deleteMany({ where: { user: { email: { endsWith: domain } } } });
   // The ledger is append-only by trigger; test cleanup is the only place that may bypass it.
   await prisma.$transaction([
     prisma.$executeRawUnsafe('ALTER TABLE stock_movements DISABLE TRIGGER stock_movements_immutable'),

@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
-import { LayoutDashboard, Package, Store, Tags, Users, Warehouse } from 'lucide-react';
+import { ClipboardList, LayoutDashboard, Package, Store, Tags, Users, Warehouse } from 'lucide-react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { StorefrontLayout } from '../layouts/StorefrontLayout';
 import { PortalLayout, type NavItem } from '../layouts/PortalLayout';
@@ -18,6 +18,7 @@ const page = <M extends Record<string, unknown>>(load: () => Promise<M>, name: k
 const sellerNav: NavItem[] = [
   { to: '/seller', label: 'Dashboard', icon: <LayoutDashboard size={18} />, end: true },
   { to: '/seller/products', label: 'Products', icon: <Package size={18} /> },
+  { to: '/seller/orders', label: 'Orders', icon: <ClipboardList size={18} /> },
   { to: '/seller/inventory', label: 'Inventory', icon: <Warehouse size={18} /> },
   { to: '/seller/store', label: 'Store profile', icon: <Store size={18} /> },
 ];
@@ -53,11 +54,23 @@ export const router = createBrowserRouter([
           { path: '/account', ...page(() => import('../pages/buyer/AccountPage'), 'AccountPage') },
           { path: '/wishlist', ...page(() => import('../pages/storefront/WishlistPage'), 'WishlistPage') },
           { path: '/cart', ...page(() => import('../pages/storefront/CartPage'), 'CartPage') },
+          { path: '/account/orders', ...page(() => import('../pages/buyer/OrdersPage'), 'OrdersPage') },
+          { path: '/account/orders/:id', ...page(() => import('../pages/buyer/OrderDetailPage'), 'OrderDetailPage') },
+          { path: '/account/addresses', ...page(() => import('../pages/buyer/AddressesPage'), 'AddressesPage') },
           { path: '/checkout', ...page(() => import('../pages/storefront/CheckoutPage'), 'CheckoutPage') },
         ],
       },
       { path: '*', ...page(() => import('../pages/NotFoundPage'), 'NotFoundPage') },
     ],
+  },
+  {
+    // Invoices render without the storefront chrome so they print cleanly.
+    element: <RequireRole roles={['BUYER']} />,
+    children: [{ path: '/account/orders/:id/invoice/:sid', ...page(() => import('../pages/buyer/InvoicePage'), 'BuyerInvoicePage') }],
+  },
+  {
+    element: <RequireRole roles={['SELLER']} />,
+    children: [{ path: '/seller/orders/:id/invoice', ...page(() => import('../pages/seller/SellerInvoicePage'), 'SellerInvoicePage') }],
   },
   {
     element: <RequireRole roles={['SELLER']} />,
@@ -69,6 +82,8 @@ export const router = createBrowserRouter([
           { path: '/seller/products', ...page(() => import('../pages/seller/SellerProductsPage'), 'SellerProductsPage') },
           { path: '/seller/products/new', ...page(() => import('../pages/seller/SellerProductFormPage'), 'SellerProductFormPage') },
           { path: '/seller/products/:id', ...page(() => import('../pages/seller/SellerProductFormPage'), 'SellerProductFormPage') },
+          { path: '/seller/orders', ...page(() => import('../pages/seller/SellerOrdersPage'), 'SellerOrdersPage') },
+          { path: '/seller/orders/:id', ...page(() => import('../pages/seller/SellerOrderDetailPage'), 'SellerOrderDetailPage') },
           { path: '/seller/inventory', ...page(() => import('../pages/seller/SellerInventoryPage'), 'SellerInventoryPage') },
           { path: '/seller/store', ...page(() => import('../pages/seller/SellerStorePage'), 'SellerStorePage') },
         ],

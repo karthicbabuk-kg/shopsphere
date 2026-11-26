@@ -129,10 +129,19 @@ export interface ProductDetail {
   related: ProductCard[];
 }
 
+/**
+ * Public reads are cached for 30 s by the browser. After the buyer changes something that is shown on
+ * those pages (their own review), a version param makes the next refetch skip the cached copy.
+ */
+let cacheVersion = 0;
+export const bustPublicCache = () => {
+  cacheVersion += 1;
+};
+
 export const useProduct = (slug: string) =>
   useQuery({
     queryKey: ['storefront', 'product', slug],
-    queryFn: () => unwrap<{ product: ProductDetail }>(api.get(`/products/${slug}`)).then((r) => r.product),
+    queryFn: () => unwrap<{ product: ProductDetail }>(api.get(`/products/${slug}`, { params: { _v: cacheVersion || undefined } })).then((r) => r.product),
     retry: (count, error) => count < 1 && (error as { code?: string }).code !== 'NOT_FOUND',
   });
 
@@ -149,7 +158,7 @@ export const useReviews = (slug: string, sort: string, page: number) =>
     queryKey: ['storefront', 'reviews', slug, sort, page],
     placeholderData: keepPreviousData,
     queryFn: async () => {
-      const res = await api.get(`/products/${slug}/reviews`, { params: { sort, page, pageSize: 5 } });
+      const res = await api.get(`/products/${slug}/reviews`, { params: { sort, page, pageSize: 5, _v: cacheVersion || undefined } });
       const body = res.data as { data: { items: Review[] }; meta: PageMeta };
       return { items: body.data.items, meta: body.meta };
     },

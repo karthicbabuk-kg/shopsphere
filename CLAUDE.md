@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-7 done (…inventory, storefront with search/filters/product page, wishlist, cart, demo data). Next: Phase 8 (checkout, payments, multi-seller orders, tracking, cancel/return, reviews).
+Phases 1-8 done (…storefront, cart, checkout, multi-seller orders, seller fulfilment, cancel/return, invoices, reviews). Next: Phase 9 (reports, commission/settlements, CSV, charts, admin settings UI, admin order oversight).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -50,4 +50,8 @@ Phases 1-7 done (…inventory, storefront with search/filters/product page, wish
 - Demo data: `pnpm db:seed` then `pnpm --filter @shopsphere/api demo:seed`. Product images are generated illustrations (`apps/api/scripts/`), URLs in `demo-images.json`. Test DB needs `db:seed` only.
 - Storefront visibility has ONE definition, `visibleProduct`; reuse it for anything buyer-facing.
 - Money in the UI uses sans tabular numerals (DM Mono spaces out digit groups); `formatINR` drops ".00" for whole rupees.
-- Cart/wishlist need a BUYER account; sellers and admins get an explanatory toast. `/checkout` is a temporary page until Phase 8.
+- Cart/wishlist need a BUYER account; sellers and admins get an explanatory toast.
+- Orders: every status change goes through `move()` in `modules/orders/orders.service.ts` (compare-and-set plus stock, refund and commission effects); the parent order status is derived by `deriveOrderStatus`. Payments are simulated (no card data anywhere).
+- The toaster shows messages one at a time; E2E tests must assert visible state, not queued toasts.
+- Public GETs are browser-cached for 30 s; after a buyer edits something shown there call `bustPublicCache()` (storeApi.ts).
+- E2E order tests create their own seller and product (`createSellerWithLiveProduct`) so demo stock is untouched; teardown also removes orders and reviews and recounts coupon usage.

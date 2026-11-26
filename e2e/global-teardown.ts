@@ -26,6 +26,21 @@ export default async function globalTeardown() {
   try {
     await deleteCloudinaryAssets(client, sellerIds, require);
     await client.query('BEGIN');
+    // Orders first: they reference the E2E buyers, sellers and variants.
+    const e2eUsers = `SELECT id FROM users WHERE email LIKE '%@e2e.local'`;
+    const orderIds = `SELECT o.id FROM orders o WHERE o."buyerId" IN (${e2eUsers}) OR o.id IN (SELECT "orderId" FROM seller_orders WHERE "sellerId" IN (${sellerIds}))`;
+    const soIds = `SELECT id FROM seller_orders WHERE "orderId" IN (${orderIds})`;
+    await client.query(`DELETE FROM order_status_history WHERE "sellerOrderId" IN (${soIds})`);
+    await client.query(`DELETE FROM commissions WHERE "sellerOrderId" IN (${soIds})`);
+    await client.query(`DELETE FROM refunds WHERE "paymentId" IN (SELECT id FROM payments WHERE "orderId" IN (${orderIds}))`);
+    await client.query(`DELETE FROM order_items WHERE "sellerOrderId" IN (${soIds})`);
+    await client.query(`DELETE FROM seller_orders WHERE "orderId" IN (${orderIds})`);
+    await client.query(`DELETE FROM payments WHERE "orderId" IN (${orderIds})`);
+    await client.query(`DELETE FROM coupon_usage WHERE "orderId" IN (${orderIds})`);
+    await client.query(`DELETE FROM orders WHERE id IN (${orderIds})`);
+    await client.query(`DELETE FROM reviews WHERE "userId" IN (${e2eUsers})`);
+    // Coupons keep an honest usage counter after the test orders are gone.
+    await client.query(`UPDATE coupons c SET "usedCount" = (SELECT count(*) FROM coupon_usage u WHERE u."couponId" = c.id)`);
     // The stock ledger is append-only by trigger; teardown is the one place that bypasses it.
     await client.query('ALTER TABLE stock_movements DISABLE TRIGGER stock_movements_immutable');
     await client.query(`DELETE FROM stock_movements WHERE "sellerId" IN (${sellerIds})`);
