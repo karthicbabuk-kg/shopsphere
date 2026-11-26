@@ -1,0 +1,75 @@
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/700.css';
+@import '@fontsource/dm-mono/400.css';
+@import '@fontsource/dm-mono/500.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, monospace;
+
+  --color-navy-900: #0b1a52;
+  --color-navy-700: #0f2167;
+  --color-blue-600: #1f6fea;
+  --color-blue-700: #1a5cc4;
+  --color-blue-50: #eaf2fe;
+  --color-saffron-500: #f59e0b;
+  --color-saffron-700: #b45309;
+  --color-ink: #24262a;
+  --color-muted: #55585e;
+  --color-faint: #73767c;
+  --color-canvas: #fafafa;
+  --color-zone: #e3e5e8;
+  --color-line: #d5d9df;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-e1: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-e2: 0 8px 24px rgb(15 23 42 / 0.1);
+  --shadow-e3: 0 24px 64px rgb(15 23 42 / 0.18);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    font-weight: 700;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-blue-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
