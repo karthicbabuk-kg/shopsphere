@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 import { createBrowserRouter, type RouteObject } from 'react-router-dom';
-import { ClipboardList, LayoutDashboard, Package, Store, Tags, Users, Warehouse } from 'lucide-react';
+import { BarChart3, ClipboardList, LayoutDashboard, Package, ShoppingBag, SlidersHorizontal, Store, Tags, Users, Wallet, Warehouse } from 'lucide-react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { StorefrontLayout } from '../layouts/StorefrontLayout';
 import { PortalLayout, type NavItem } from '../layouts/PortalLayout';
@@ -20,6 +20,7 @@ const sellerNav: NavItem[] = [
   { to: '/seller/products', label: 'Products', icon: <Package size={18} /> },
   { to: '/seller/orders', label: 'Orders', icon: <ClipboardList size={18} /> },
   { to: '/seller/inventory', label: 'Inventory', icon: <Warehouse size={18} /> },
+  { to: '/seller/reports', label: 'Reports', icon: <BarChart3 size={18} /> },
   { to: '/seller/store', label: 'Store profile', icon: <Store size={18} /> },
 ];
 
@@ -28,6 +29,10 @@ const adminNav: NavItem[] = [
   { to: '/admin/sellers', label: 'Sellers', icon: <Users size={18} /> },
   { to: '/admin/products', label: 'Products', icon: <Package size={18} /> },
   { to: '/admin/catalog', label: 'Catalogue', icon: <Tags size={18} /> },
+  { to: '/admin/orders', label: 'Orders', icon: <ShoppingBag size={18} /> },
+  { to: '/admin/reports', label: 'Reports', icon: <BarChart3 size={18} /> },
+  { to: '/admin/settlements', label: 'Settlements', icon: <Wallet size={18} /> },
+  { to: '/admin/settings', label: 'Settings', icon: <SlidersHorizontal size={18} /> },
 ];
 
 export const router = createBrowserRouter([
@@ -85,6 +90,7 @@ export const router = createBrowserRouter([
           { path: '/seller/orders', ...page(() => import('../pages/seller/SellerOrdersPage'), 'SellerOrdersPage') },
           { path: '/seller/orders/:id', ...page(() => import('../pages/seller/SellerOrderDetailPage'), 'SellerOrderDetailPage') },
           { path: '/seller/inventory', ...page(() => import('../pages/seller/SellerInventoryPage'), 'SellerInventoryPage') },
+          { path: '/seller/reports', ...page(() => import('../pages/seller/SellerReportsPage'), 'SellerReportsPage') },
           { path: '/seller/store', ...page(() => import('../pages/seller/SellerStorePage'), 'SellerStorePage') },
         ],
       },
@@ -102,6 +108,11 @@ export const router = createBrowserRouter([
           { path: '/admin/products', ...page(() => import('../pages/admin/AdminProductsPage'), 'AdminProductsPage') },
           { path: '/admin/products/:id', ...page(() => import('../pages/admin/AdminProductDetailPage'), 'AdminProductDetailPage') },
           { path: '/admin/catalog', ...page(() => import('../pages/admin/AdminCatalogPage'), 'AdminCatalogPage') },
+          { path: '/admin/orders', ...page(() => import('../pages/admin/AdminOrdersPage'), 'AdminOrdersPage') },
+          { path: '/admin/orders/:id', ...page(() => import('../pages/admin/AdminOrderDetailPage'), 'AdminOrderDetailPage') },
+          { path: '/admin/reports', ...page(() => import('../pages/admin/AdminReportsPage'), 'AdminReportsPage') },
+          { path: '/admin/settlements', ...page(() => import('../pages/admin/AdminSettlementsPage'), 'AdminSettlementsPage') },
+          { path: '/admin/settings', ...page(() => import('../pages/admin/AdminSettingsPage'), 'AdminSettingsPage') },
         ],
       },
     ],

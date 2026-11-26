@@ -120,5 +120,27 @@ export async function createSellerWithLiveProduct(request: APIRequestContext, st
   expect(created.status()).toBe(201);
   const product = (await created.json()).data.product as { id: string; slug: string };
   await withDb((c) => c.query(`UPDATE products SET status = 'ACTIVE', approval = 'APPROVED' WHERE id = $1`, [product.id]));
-  return { email, name, slug: product.slug, productId: product.id };
+  return { email, name, slug: product.slug, productId: product.id, storeName: `E2E Store ${stamp}` };
+}
+
+/**
+ * Places an order for the seller's product as a throw-away buyer and walks it to DELIVERED, all through
+ * the API. Returns the order number so UI tests can look for it.
+ */
+export async function deliveredOrderViaApi(request: APIRequestContext, seller: { email: string; slug: string }, stamp: string, qty = 2) {
+  const json = async (r: import('@playwright/test').APIResponse) => (await r.json()) as { data: Record<string, any> }; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const reg = await json(await request.post('/api/v1/auth/register', { data: { name: 'API Buyer', email: `apibuyer-${stamp}@e2e.local`, password: PASSWORD } }));
+  const buyer = { Authorization: `Bearer ${reg.data.accessToken}` };
+  const addr = await json(await request.post('/api/v1/addresses', { headers: buyer, data: { label: 'Home', name: 'Report Buyer', phone: '9876543210', line1: '5 Park Street', city: 'Kolkata', state: 'West Bengal', pincode: '700016' } }));
+  const product = await json(await request.get(`/api/v1/products/${seller.slug}`));
+  await request.post('/api/v1/cart/items', { headers: buyer, data: { variantId: product.data.product.variants[0].id, quantity: qty } });
+  const order = await json(await request.post('/api/v1/orders', { headers: buyer, data: { addressId: addr.data.address.id, paymentMethod: 'UPI' } }));
+  const login = await json(await request.post('/api/v1/auth/login', { data: { email: seller.email, password: PASSWORD } }));
+  const sellerAuth = { Authorization: `Bearer ${login.data.accessToken}` };
+  const sid = order.data.order.shipments[0].id as string;
+  for (const a of [{ action: 'accept' }, { action: 'process' }, { action: 'pack' }, { action: 'ship', carrier: 'DTDC' }, { action: 'deliver' }]) {
+    const r = await request.post(`/api/v1/seller/orders/${sid}/actions`, { headers: sellerAuth, data: a });
+    expect(r.ok()).toBeTruthy();
+  }
+  return { orderNo: order.data.order.orderNo as string, totalPaise: order.data.order.totalPaise as number };
 }

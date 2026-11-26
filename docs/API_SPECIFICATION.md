@@ -118,3 +118,19 @@ All buyer routes are scoped to the token's user; another buyer's ids return `404
 | `GET /reviews/mine/:productId`, `PUT /reviews/:productId` | BUYER | Eligibility (a delivered order contains the product) and create or update the buyer's single review; the product rating is recalculated |
 
 No card number, UPI id or other payment credential is ever sent or stored. `demoOutcome` (`SUCCESS` or `FAIL`) simulates the gateway result.
+
+## Reports, settlements and settings (Phase 9)
+`days` is 7, 30 or 90 (default 30). Seller routes are scoped to the token's seller; admin routes require `ADMIN`. CSV endpoints return `text/csv` (UTF-8 with BOM) as an attachment.
+
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /seller/reports/summary?days=` | SELLER | KPIs (sales, orders, units, average order, earnings, platform fee, cancelled/returned, to fulfil), daily series, status breakdown, top items, payout totals |
+| `GET /seller/reports/orders.csv?days=` | SELLER | The seller's shipments as CSV (max 10,000 rows) |
+| `GET /seller/reports/settlements` | SELLER | The seller's settlement statements |
+| `GET /admin/reports/summary?days=` | ADMIN | Platform KPIs, daily series, top sellers, sales by category, top items, status breakdown, platform-wide inventory totals and valuation |
+| `GET /admin/reports/orders.csv?days=`, `GET /admin/reports/commissions.csv` | ADMIN | Order and commission exports |
+| `GET /admin/orders?status=&q=&page=`, `GET /admin/orders/:id` | ADMIN | Read-only order oversight (buyer email, per-shipment commission, history) |
+| `GET /admin/settlements` | ADMIN | `pending` (delivered, unsettled earnings per seller) and settlement history |
+| `POST /admin/settlements` | ADMIN | `{ sellerId }` settles that seller's delivered, unsettled earnings; `409` if there are none |
+| `POST /admin/settlements/:id/pay` | ADMIN | Marks a settlement paid (demo; no real transfer); `409` if already paid |
+| `GET /admin/settings`, `PUT /admin/settings` | ADMIN | Business rules with bounds; partial update; every change is audit-logged with before/after |

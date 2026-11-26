@@ -7,6 +7,9 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { StatCard } from '../../components/StatCard';
 import { useInventorySummary } from '../../features/inventory/inventoryApi';
 import { useSellerProfile } from '../../features/seller/sellerApi';
+import { SalesChart } from '../../components/charts/Charts';
+import { useSellerReport } from '../../features/reports/reportsApi';
+import { formatINRWhole } from '../../utils/format';
 
 const BANNER = {
   PENDING: {
@@ -20,6 +23,27 @@ const BANNER = {
     text: 'Your store is suspended and your products are hidden. Contact the platform administrator.',
   },
 } as const;
+
+function SalesWidget() {
+  const { data: r } = useSellerReport(30);
+  if (!r) return null;
+  const k = r.kpis;
+  return (
+    <section className="mb-6 rounded-lg border border-line bg-white p-6" aria-labelledby="sales-heading">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="sales-heading" className="text-lg">Sales, last 30 days</h2>
+        <Link to="/seller/reports" className="text-sm font-bold text-blue-600">Full reports</Link>
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-4">
+        <StatCard label="Sales" value={formatINRWhole(k.salesPaise)} />
+        <StatCard label="Your earnings" value={formatINRWhole(k.netToSellersPaise)} />
+        <StatCard label="Orders" value={k.orders} />
+        <StatCard label="To fulfil" value={k.pendingFulfilment} accent={k.pendingFulfilment > 0} />
+      </div>
+      {k.orders > 0 && <div className="mt-4"><SalesChart data={r.series} height={200} /></div>}
+    </section>
+  );
+}
 
 function InventoryWidget() {
   const { data: s } = useInventorySummary();
@@ -95,6 +119,7 @@ export function SellerHomePage() {
         </div>
       </Alert>
 
+      {data.status === 'APPROVED' && <SalesWidget />}
       <InventoryWidget />
 
       <section className="mt-6 rounded-lg border border-line bg-white p-6" aria-labelledby="onboarding">

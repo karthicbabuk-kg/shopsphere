@@ -38,6 +38,7 @@ export default async function globalTeardown() {
     await client.query(`DELETE FROM payments WHERE "orderId" IN (${orderIds})`);
     await client.query(`DELETE FROM coupon_usage WHERE "orderId" IN (${orderIds})`);
     await client.query(`DELETE FROM orders WHERE id IN (${orderIds})`);
+    await client.query(`DELETE FROM seller_settlements WHERE "sellerId" IN (${sellerIds})`);
     await client.query(`DELETE FROM reviews WHERE "userId" IN (${e2eUsers})`);
     // Coupons keep an honest usage counter after the test orders are gone.
     await client.query(`UPDATE coupons c SET "usedCount" = (SELECT count(*) FROM coupon_usage u WHERE u."couponId" = c.id)`);

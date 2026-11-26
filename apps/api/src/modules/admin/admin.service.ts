@@ -9,9 +9,10 @@ export async function overview() {
       prisma.product.count({ where: { deletedAt: null } }),
       prisma.product.count({ where: { deletedAt: null, approval: 'PENDING', status: 'ACTIVE' } }),
       prisma.order.count(),
-      prisma.order.aggregate({
+      // Same definition as the reports: shipments that were not cancelled or returned.
+      prisma.sellerOrder.aggregate({
         _sum: { totalPaise: true },
-        where: { status: { notIn: ['CANCELLED'] } },
+        where: { status: { notIn: ['CANCELLED', 'RETURNED'] } },
       }),
       prisma.commission.aggregate({ _sum: { amountPaise: true } }),
       prisma.seller.findMany({

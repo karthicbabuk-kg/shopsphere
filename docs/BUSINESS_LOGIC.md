@@ -54,3 +54,11 @@ A product is publicly visible only if it is `ACTIVE`, `APPROVED`, not deleted, i
 - **Returns** are accepted within 7 days of the DELIVERED history entry, once per shipment.
 - **Reviews:** only buyers with a delivered shipment containing the product; one review per product, editable.
 - Known simplification: with COD, a return before the whole order is delivered creates no refund row because no payment has been collected yet.
+
+## Reports, settlements and settings (Phase 9)
+- **Sales** = sum of shipment totals (goods after discount + delivery) for shipments that are not CANCELLED or RETURNED, grouped by the day the order was placed in India time (IST). A shipment waiting on a return decision still counts until the return is received.
+- **Commission and seller net** come from the `commissions` table. Rows exist only for shipments that stayed sold, so for any period: sales = commission + seller net + delivery charges. This identity is asserted in the tests, and chart series always add up to the headline figure.
+- **Top items** group order lines by their name snapshot, so a renamed product keeps its old name in history.
+- **Settlements:** the unit is a delivered shipment whose commission row has no settlement. Creating a settlement claims those rows with a compare-and-set, stores gross (= commission + net), commission and net, and cannot double-settle the same shipment. "Paid" is a demo status and moves no money. Known simplification: a shipment returned after its settlement keeps its commission row and no automatic clawback is created.
+- **CSV exports** write money as exact decimal rupees from integer paise, and prefix any text cell beginning with `=`, `+`, `-` or `@` with an apostrophe so spreadsheets never run it as a formula.
+- **Settings** (`platform_settings`) are validated (commission 0-50%, GST 0-28%, delivery fee up to ₹500, and so on), cached for 30 seconds per server process, and take effect for new carts and orders; existing orders keep their stored amounts. Each change writes an audit log entry with the previous and new values.

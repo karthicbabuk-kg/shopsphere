@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-8 done (…storefront, cart, checkout, multi-seller orders, seller fulfilment, cancel/return, invoices, reviews). Next: Phase 9 (reports, commission/settlements, CSV, charts, admin settings UI, admin order oversight).
+Phases 1-9 done (…checkout and orders, reports and charts, CSV exports, settlements, admin orders and settings). Next: Phase 10 (QA, security review, accessibility and performance audit, E2E hardening).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -55,3 +55,5 @@ Phases 1-8 done (…storefront, cart, checkout, multi-seller orders, seller fulf
 - The toaster shows messages one at a time; E2E tests must assert visible state, not queued toasts.
 - Public GETs are browser-cached for 30 s; after a buyer edits something shown there call `bustPublicCache()` (storeApi.ts).
 - E2E order tests create their own seller and product (`createSellerWithLiveProduct`) so demo stock is untouched; teardown also removes orders and reviews and recounts coupon usage.
+- Report definitions live in `modules/reports/reports.service.ts` (sales excludes CANCELLED/RETURNED; sales = commission + net + delivery). Charts use recharts via `components/charts/Charts.tsx` with a hidden data table for screen readers. CSV cells go through `utils/csv.ts` (formula-injection safe); never build CSV by hand.
+- E2E tests that change platform settings must wait for the form to load before reading values and must restore them.

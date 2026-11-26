@@ -6,10 +6,13 @@ import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { EmptyState } from '../../components/EmptyState';
 import { useOverview } from '../../features/admin/adminApi';
+import { SalesChart } from '../../components/charts/Charts';
+import { useAdminReport } from '../../features/reports/reportsApi';
 import { formatDate, formatINRWhole } from '../../utils/format';
 
 export function AdminHomePage() {
   const { data, isLoading, isError } = useOverview();
+  const { data: report } = useAdminReport(30);
 
   if (isError) return <Alert severity="error">Could not load platform metrics.</Alert>;
   if (isLoading || !data) {
@@ -66,6 +69,16 @@ export function AdminHomePage() {
           icon={<Boxes size={18} />}
         />
       </div>
+
+      {report && report.kpis.orders > 0 && (
+        <section className="mt-10 rounded-lg border border-line bg-white p-6" aria-labelledby="sales-heading">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 id="sales-heading" className="text-xl">Sales, last 30 days</h2>
+            <Link to="/admin/reports" className="text-sm font-bold text-blue-600">Full reports</Link>
+          </div>
+          <SalesChart data={report.series} height={220} />
+        </section>
+      )}
 
       <section className="mt-10" aria-labelledby="pending-heading">
         <div className="mb-3 flex items-center justify-between">

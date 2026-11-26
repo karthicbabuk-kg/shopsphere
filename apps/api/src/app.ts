@@ -27,6 +27,7 @@ import { couponsRouter } from './modules/coupons/coupons.routes.js';
 import { wishlistRouter } from './modules/wishlist/wishlist.routes.js';
 import { addressesRouter } from './modules/addresses/addresses.routes.js';
 import { checkoutRouter, ordersRouter, sellerOrdersRouter } from './modules/orders/orders.routes.js';
+import { adminReportsRouter, sellerReportsRouter } from './modules/reports/reports.routes.js';
 import { reviewsRouter } from './modules/reviews/reviews.routes.js';
 import {
   inventoryRouter,
@@ -59,6 +60,7 @@ export function createApp() {
   app.use(`${API_PREFIX}/health`, healthRouter);
   app.use(`${API_PREFIX}/auth`, authRouter);
   app.use(`${API_PREFIX}/sellers`, sellersRouter);
+  app.use(`${API_PREFIX}/admin`, adminReportsRouter);
   app.use(`${API_PREFIX}/admin`, adminRouter);
   app.use(`${API_PREFIX}/notifications`, notificationsRouter);
   app.use(`${API_PREFIX}/categories`, categoriesRouter);
@@ -74,6 +76,7 @@ export function createApp() {
   app.use(`${API_PREFIX}/checkout`, checkoutRouter);
   app.use(`${API_PREFIX}/orders`, ordersRouter);
   app.use(`${API_PREFIX}/reviews`, reviewsRouter);
+  app.use(`${API_PREFIX}/seller/reports`, sellerReportsRouter);
   app.use(`${API_PREFIX}/seller/orders`, sellerOrdersRouter);
   app.use(`${API_PREFIX}/seller/inventory`, inventoryRouter);
   app.use(`${API_PREFIX}/seller/stock-movements`, stockMovementsRouter);

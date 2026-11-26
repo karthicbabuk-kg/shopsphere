@@ -741,3 +741,55 @@ export async function sellerAct(userId: string, soId: string, a: SellerOrderActi
   await afterMove(r, to, actor, userId, 'reason' in a ? a.reason : undefined);
   return getSellerOrder(userId, soId);
 }
+
+// ───────────────────────── Admin oversight (read-only) ─────────────────────────
+
+export async function listAdminOrders(q: { page: number; pageSize: number; status?: string; q?: string }) {
+  const where: Prisma.OrderWhereInput = {
+    ...(q.status ? { status: q.status as Prisma.EnumOrderStatusFilter['equals'] } : {}),
+    ...(q.q ? { orderNo: { contains: q.q, mode: 'insensitive' } } : {}),
+  };
+  const [rows, total, grouped] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      ...pageArgs(q),
+      select: {
+        id: true, orderNo: true, status: true, createdAt: true, totalPaise: true,
+        buyer: { select: { name: true } },
+        payments: { select: { method: true, status: true }, take: 1 },
+        sellerOrders: { select: { id: true } },
+      },
+    }),
+    prisma.order.count({ where }),
+    prisma.order.groupBy({ by: ['status'], _count: true }),
+  ]);
+  return {
+    items: rows.map((r) => ({
+      id: r.id, orderNo: r.orderNo, status: r.status, placedAt: r.createdAt, totalPaise: r.totalPaise,
+      buyer: r.buyer.name, shipments: r.sellerOrders.length, payment: r.payments[0] ?? null,
+    })),
+    statusCounts: Object.fromEntries(grouped.map((g) => [g.status, g._count])),
+    meta: pageMeta(q, total),
+  };
+}
+
+export async function getAdminOrder(orderId: string) {
+  const o = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { ...orderInclude, buyer: { select: { name: true, email: true } } },
+  });
+  if (!o) throw AppError.notFound('Order not found');
+  const view = orderView(o);
+  return {
+    ...view,
+    buyer: o.buyer,
+    shipments: view.shipments.map((s, i) => ({
+      ...s,
+      sellerId: o.sellerOrders[i]!.seller.id,
+      commission: o.sellerOrders[i]!.commission
+        ? { rateBp: o.sellerOrders[i]!.commission!.rateBp, amountPaise: o.sellerOrders[i]!.commission!.amountPaise, netSellerPaise: o.sellerOrders[i]!.commission!.netSellerPaise }
+        : null,
+    })),
+  };
+}
