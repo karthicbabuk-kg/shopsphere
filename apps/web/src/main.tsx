@@ -6,6 +6,7 @@ import { StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './app/theme';
 import { router } from './app/router';
+import { AuthBootstrap } from './features/auth/AuthBootstrap';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -18,7 +19,9 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider theme={theme}>
         <CssBaseline enableColorScheme />
         <QueryClientProvider client={queryClient}>
-          <RouterProvider router={router} />
+          <AuthBootstrap>
+            <RouterProvider router={router} />
+          </AuthBootstrap>
         </QueryClientProvider>
       </ThemeProvider>
     </StyledEngineProvider>

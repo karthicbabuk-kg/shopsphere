@@ -31,4 +31,9 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phase 1 (design/docs) and Phase 2 (scaffold) done. Next: Phase 3 auth.
+Phases 1-2 done. Phase 3 (auth) done: API + web login/register/seller-signup/reset, route guards. Next: Phase 4 (admin shell, seller approval).
+
+## Gotchas
+- `.env` values containing `#` are truncated by Node's env loader (treated as comment).
+- API production build: shared packages export TypeScript source, so `node dist/server.js` will not run as-is; bundle the API (e.g. tsup/esbuild) in Phase 11.
+- Web keeps a non-secret `ss_session` localStorage hint so anonymous visitors skip the refresh call.
