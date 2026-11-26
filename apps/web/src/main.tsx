@@ -7,6 +7,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './app/theme';
 import { router } from './app/router';
 import { AuthBootstrap } from './features/auth/AuthBootstrap';
+import { Toaster } from './components/Toaster';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
           <AuthBootstrap>
             <RouterProvider router={router} />
           </AuthBootstrap>
+          <Toaster />
         </QueryClientProvider>
       </ThemeProvider>
     </StyledEngineProvider>

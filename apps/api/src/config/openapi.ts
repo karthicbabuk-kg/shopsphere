@@ -105,6 +105,73 @@ export const openapi = {
         security: [{ bearerAuth: [] }],
         responses: { '200': ok('{ seller }'), '403': ok('Not a seller') },
       },
+      patch: {
+        tags: ['Sellers'],
+        summary: 'Update own store profile',
+        security: [{ bearerAuth: [] }],
+        requestBody: json(
+          { name: str, description: str, contactEmail: str, contactPhone: str, city: str, state: str, businessName: str },
+          [],
+        ),
+        responses: { '200': ok('{ seller }'), '422': ok('Validation error') },
+      },
+    },
+    '/admin/overview': {
+      get: {
+        tags: ['Admin'],
+        summary: 'Platform KPIs (buyers, sellers by status, products, orders, GMV, commission)',
+        security: [{ bearerAuth: [] }],
+        responses: { '200': ok('Overview'), '403': ok('Not an admin') },
+      },
+    },
+    '/admin/sellers': {
+      get: {
+        tags: ['Admin'],
+        summary: 'List sellers (status, q, page, pageSize)',
+        security: [{ bearerAuth: [] }],
+        responses: { '200': ok('{ items, statusCounts } + meta') },
+      },
+    },
+    '/admin/sellers/{id}': {
+      get: {
+        tags: ['Admin'],
+        summary: 'Seller detail with documents and audit history',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': ok('{ seller }'), '404': ok('Not found') },
+      },
+    },
+    '/admin/sellers/{id}/{action}': {
+      post: {
+        tags: ['Admin'],
+        summary: 'approve | reject | suspend | reactivate (reject/suspend need { reason }); invalid transitions return 409',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'action', in: 'path', required: true, schema: { type: 'string', enum: ['approve', 'reject', 'suspend', 'reactivate'] } },
+        ],
+        responses: { '200': ok('Updated seller'), '409': ok('Invalid status transition'), '422': ok('Reason missing') },
+      },
+    },
+    '/notifications': {
+      get: {
+        tags: ['Notifications'],
+        summary: 'Own notifications with unread count',
+        security: [{ bearerAuth: [] }],
+        responses: { '200': ok('{ items, unread } + meta') },
+      },
+    },
+    '/notifications/{id}/read': {
+      post: {
+        tags: ['Notifications'],
+        summary: 'Mark one notification read (own only)',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: { '200': ok('Marked'), '404': ok('Not found') },
+      },
+    },
+    '/notifications/read-all': {
+      post: { tags: ['Notifications'], summary: 'Mark all own notifications read', security: [{ bearerAuth: [] }], responses: { '200': ok('Marked') } },
     },
     '/admin/ping': {
       get: {

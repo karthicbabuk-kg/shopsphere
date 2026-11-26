@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { Logo } from '../components/Logo';
 
 export function AuthLayout({
   title,
@@ -18,9 +16,6 @@ export function AuthLayout({
   return (
     <section className="grid min-h-[calc(100vh-4rem)] place-items-center px-5 py-12">
       <div className={`w-full ${wide ? 'max-w-[640px]' : 'max-w-[440px]'}`}>
-        <Link to="/" className="mb-8 inline-block" aria-label="ShopSphere home">
-          <Logo />
-        </Link>
         <div className="rounded-xl border border-line bg-white p-8 shadow-e1">
           <h1 className="text-3xl">{title}</h1>
           {subtitle && <p className="mt-2 text-muted">{subtitle}</p>}

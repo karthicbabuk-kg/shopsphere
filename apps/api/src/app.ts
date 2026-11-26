@@ -16,6 +16,7 @@ import { healthRouter } from './modules/health/health.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { sellersRouter } from './modules/sellers/sellers.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
+import { notificationsRouter } from './modules/notifications/notifications.routes.js';
 
 export function createApp() {
   const app = express();
@@ -42,6 +43,7 @@ export function createApp() {
   app.use(`${API_PREFIX}/auth`, authRouter);
   app.use(`${API_PREFIX}/sellers`, sellersRouter);
   app.use(`${API_PREFIX}/admin`, adminRouter);
+  app.use(`${API_PREFIX}/notifications`, notificationsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

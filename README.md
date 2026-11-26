@@ -2,7 +2,7 @@
 
 Premium multi-vendor e-commerce and inventory management demo: buyer storefront, seller portal and super-admin portal on one Express API and one PostgreSQL database. Payments are simulated; no real money moves.
 
-> Status: Phase 3 complete (authentication API + web). See `docs/PROJECT_OVERVIEW.md` for the roadmap.
+> Status: Phase 4 complete (admin console, seller approval workflow). See `docs/PROJECT_OVERVIEW.md` for the roadmap.
 
 ## Stack
 React 19 · TypeScript 5.9 · Vite 8 · Tailwind 4 · MUI 9 · TanStack Query · React Hook Form + Zod · Framer Motion · Recharts · Lucide  

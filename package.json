@@ -16,6 +16,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "pnpm -r test",
+    "e2e": "playwright test",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @shopsphere/api prisma:migrate",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.14.0",

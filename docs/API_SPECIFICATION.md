@@ -30,3 +30,15 @@ Base path `/api/v1`. Live, browsable spec: `/api/docs` (Swagger UI, generated fr
 - Login responses are identical for unknown email and wrong password; response time is equalised with a dummy hash.
 - Concurrent refreshes with the same token: exactly one wins; a token rotated within the last 10 s is rejected without revoking the family (client race, not theft).
 - Demo mode (`DEMO_MODE=true`) returns the reset token to anyone who knows an email. Acceptable for fake demo data only; set `DEMO_MODE=false` for anything real.
+
+## Implemented (Phase 4)
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /admin/overview` | ADMIN | Live KPIs: buyers, sellers by status, products, pending approvals, orders, GMV, commission, oldest pending applications |
+| `GET /admin/sellers` | ADMIN | List with `status`, `q` (store/business/email), `page`, `pageSize`; returns per-status counts |
+| `GET /admin/sellers/:id` | ADMIN | Detail incl. store, documents, last 20 audit entries |
+| `POST /admin/sellers/:id/approve\|reject\|suspend\|reactivate` | ADMIN | `reject`/`suspend` require `{ reason }`. Allowed: PENDING/REJECTED→APPROVED, PENDING→REJECTED, APPROVED→SUSPENDED, SUSPENDED→APPROVED. Anything else is 409. Uses an atomic compare-and-set, writes an audit entry and notifies the seller |
+| `PATCH /sellers/me` | SELLER | Update own store/business profile (seller resolved from token) |
+| `GET /notifications`, `POST /notifications/:id/read`, `POST /notifications/read-all` | any | Own notifications only |
+
+Not yet implemented from the onboarding spec: store logo and demo document upload (needs Cloudinary credentials, delivered with the uploads module in Phase 5).

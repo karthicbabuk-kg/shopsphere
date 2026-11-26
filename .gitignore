@@ -11,3 +11,4 @@ playwright-report/
 test-results/
 .vite/
 apps/api/src/generated/
+e2e/.auth/

@@ -31,9 +31,11 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-2 done. Phase 3 (auth) done: API + web login/register/seller-signup/reset, route guards. Next: Phase 4 (admin shell, seller approval).
+Phases 1-4 done (design, scaffold, auth, admin shell + seller approval). Next: Phase 5 (categories, brands, products, Cloudinary uploads, product approval; also seller logo/document upload).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
 - API production build: shared packages export TypeScript source, so `node dist/server.js` will not run as-is; bundle the API (e.g. tsup/esbuild) in Phase 11.
 - Web keeps a non-secret `ss_session` localStorage hint so anonymous visitors skip the refresh call.
+- Seller suspension promises hidden products: the Phase 7 storefront queries MUST filter on `seller.status = APPROVED` as well as product approval.
+- E2E: `pnpm e2e` (Playwright, reuses running dev servers, tears down `@e2e.local` users). Tests live in `e2e/`.
