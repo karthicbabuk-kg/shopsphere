@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-4 done (design, scaffold, auth, admin shell + seller approval). Next: Phase 5 (categories, brands, products, Cloudinary uploads, product approval; also seller logo/document upload).
+Phases 1-5 done (design, scaffold, auth, admin + seller approval, catalogue: categories/brands/products/uploads/moderation). Next: Phase 6 (inventory: inward/outward/adjust/reserve/release/reconcile, alerts, ledger UI).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -39,3 +39,8 @@ Phases 1-4 done (design, scaffold, auth, admin shell + seller approval). Next: P
 - Web keeps a non-secret `ss_session` localStorage hint so anonymous visitors skip the refresh call.
 - Seller suspension promises hidden products: the Phase 7 storefront queries MUST filter on `seller.status = APPROVED` as well as product approval.
 - E2E: `pnpm e2e` (Playwright, reuses running dev servers, tears down `@e2e.local` users). Tests live in `e2e/`.
+- react-hook-form `useFieldArray` reserves the key `id`; never use `id` as a field name inside field arrays (use e.g. `variantId`).
+- Product form works in rupees and converts to paise with `toPaise` at submit; the API only accepts integer paise.
+- Seed (`pnpm db:seed`) creates the admin plus 27 categories / 20 brands. Test DB needs the same seed (`DATABASE_URL=$TEST_DATABASE_URL`).
+- Auth rate limit (30/15 min) applies in production only; dev/test are unlimited.
+- API tests mock Cloudinary and blank its credentials; E2E uses the real account from `.env` and deletes its uploads in teardown.

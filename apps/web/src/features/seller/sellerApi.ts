@@ -20,8 +20,42 @@ export interface SellerProfile {
     state: string | null;
     logoUrl: string | null;
   } | null;
-  documents: { id: string }[];
+  documents: { id: string; type: string; url: string; status: string; createdAt: string }[];
 }
+
+export const DOCUMENT_TYPES = ['GST certificate', 'PAN card', 'Business registration', 'Bank proof', 'Other'] as const;
+
+function useSellerMutation<V>(fn: (v: V) => Promise<unknown>, success: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      toast.success(success);
+      void qc.invalidateQueries({ queryKey: ['seller', 'me'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
+
+export const useUploadLogo = () =>
+  useSellerMutation((file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return unwrap(api.post('/sellers/me/logo', form, multipart));
+  }, 'Logo updated');
+
+export const useUploadDocument = () =>
+  useSellerMutation(({ file, type }: { file: File; type: string }) => {
+    const form = new FormData();
+    form.append('type', type);
+    form.append('file', file);
+    return unwrap(api.post('/sellers/me/documents', form, multipart));
+  }, 'Document uploaded');
+
+export const useDeleteDocument = () =>
+  useSellerMutation((id: string) => unwrap(api.delete(`/sellers/me/documents/${id}`)), 'Document removed');
 
 const KEY = ['seller', 'me'];
 

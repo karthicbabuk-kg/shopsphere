@@ -1,15 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
-
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL!;
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD!;
-const PASSWORD = 'E2eTest1234';
-
-async function signIn(page: Page, email: string, password: string) {
-  await page.goto('/login');
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
-}
+import { expect, test } from '@playwright/test';
+import { ADMIN_EMAIL, ADMIN_PASSWORD, PASSWORD, signIn } from './helpers';
 
 test('seller applies, admin approves, seller sees approval', async ({ page, browser }) => {
   const consoleErrors: string[] = [];

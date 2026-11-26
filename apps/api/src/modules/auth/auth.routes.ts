@@ -14,10 +14,11 @@ import * as c from './auth.controller.js';
 
 export const authRouter = Router();
 
-// Credential endpoints get a tighter limit than the global one (disabled under test).
+// Credential endpoints get a tighter limit than the global one in production only, so local
+// development and automated browser tests are not locked out by their own traffic.
 const strictLimiter = rateLimit({
   windowMs: 15 * 60_000,
-  limit: env.NODE_ENV === 'test' ? 10_000 : 30,
+  limit: env.NODE_ENV === 'production' ? 30 : 10_000,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },

@@ -17,6 +17,10 @@ import { authRouter } from './modules/auth/auth.routes.js';
 import { sellersRouter } from './modules/sellers/sellers.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
 import { notificationsRouter } from './modules/notifications/notifications.routes.js';
+import { categoriesRouter } from './modules/categories/categories.routes.js';
+import { brandsRouter } from './modules/brands/brands.routes.js';
+import { sellerProductsRouter } from './modules/products/seller-products.routes.js';
+import { uploadsRouter } from './modules/uploads/uploads.routes.js';
 
 export function createApp() {
   const app = express();
@@ -44,6 +48,10 @@ export function createApp() {
   app.use(`${API_PREFIX}/sellers`, sellersRouter);
   app.use(`${API_PREFIX}/admin`, adminRouter);
   app.use(`${API_PREFIX}/notifications`, notificationsRouter);
+  app.use(`${API_PREFIX}/categories`, categoriesRouter);
+  app.use(`${API_PREFIX}/brands`, brandsRouter);
+  app.use(`${API_PREFIX}/seller/products`, sellerProductsRouter);
+  app.use(`${API_PREFIX}/uploads`, uploadsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

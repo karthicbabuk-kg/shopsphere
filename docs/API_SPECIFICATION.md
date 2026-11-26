@@ -42,3 +42,25 @@ Base path `/api/v1`. Live, browsable spec: `/api/docs` (Swagger UI, generated fr
 | `GET /notifications`, `POST /notifications/:id/read`, `POST /notifications/read-all` | any | Own notifications only |
 
 Not yet implemented from the onboarding spec: store logo and demo document upload (needs Cloudinary credentials, delivered with the uploads module in Phase 5).
+
+## Implemented (Phase 5)
+| Method & path | Auth | Purpose |
+|---|---|---|
+| `GET /categories`, `GET /brands` | – | Active two-level category tree; active brands |
+| `GET/POST /admin/categories`, `PUT/DELETE /admin/categories/:id` | ADMIN | Manage categories (max two levels; in-use entries cannot be deleted, deactivate instead) |
+| `GET/POST /admin/brands`, `PUT/DELETE /admin/brands/:id` | ADMIN | Manage brands (case-insensitive unique names) |
+| `GET /seller/products` | SELLER | Own products; `q` (name/SKU), `status`, `approval`, paging; includes stock and low-stock flag |
+| `POST /seller/products`, `GET/PUT/DELETE /seller/products/:id` | SELLER | Create / read / full update / archive. Always scoped to the token's seller; other sellers' ids return 404 |
+| `GET /admin/products`, `GET /admin/products/:id` | ADMIN | Submitted products only (drafts are private), approval counts, history |
+| `POST /admin/products/:id/approve\|reject\|suspend\|reinstate` | ADMIN | Transitions: PENDING→APPROVED/REJECTED, APPROVED→SUSPENDED, SUSPENDED→APPROVED. `reject`/`suspend` need `{ reason }`; else 409 |
+| `POST /uploads/product-images` | SELLER | multipart `files` (≤8, ≤5 MB, JPEG/PNG/WebP by magic bytes) → Cloudinary folder `shopsphere/sellers/<sellerId>/products` |
+| `POST /sellers/me/logo` | SELLER | multipart `file` → store logo |
+| `POST /sellers/me/documents`, `DELETE /sellers/me/documents/:docId` | SELLER | Demo verification documents (PDF/JPEG/PNG), max 10 |
+
+### Product rules
+- Money in integer paise; `pricePaise <= mrpPaise` (also a DB CHECK). Variant prices fall back to the product price.
+- `status: DRAFT` saves privately; `ACTIVE` submits for review and needs ≥ 1 image and an **approved** store (403 otherwise). Pending sellers can save drafts.
+- SKUs are globally unique (409 names the clashing SKU). Opening stock creates the inventory row plus an immutable `OPENING` ledger entry. On update, stock quantities of existing variants are never changed by the form.
+- Removing a variant is a soft delete (history kept) and is refused while units are reserved.
+- Re-review: an approved product returns to PENDING when name, description, category, brand or images change (price/stock edits do not); a rejected product returns to PENDING when resubmitted. Suspended products cannot be edited.
+- Image references are accepted only from our Cloudinary cloud and the caller's own folder; without credentials uploads fail with `503 UPLOADS_NOT_CONFIGURED`.

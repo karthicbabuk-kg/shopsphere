@@ -173,6 +173,52 @@ export const openapi = {
     '/notifications/read-all': {
       post: { tags: ['Notifications'], summary: 'Mark all own notifications read', security: [{ bearerAuth: [] }], responses: { '200': ok('Marked') } },
     },
+    '/categories': { get: { tags: ['Catalogue'], summary: 'Active category tree (two levels)', responses: { '200': ok('{ categories }') } } },
+    '/brands': { get: { tags: ['Catalogue'], summary: 'Active brands', responses: { '200': ok('{ brands }') } } },
+    '/seller/products': {
+      get: {
+        tags: ['Seller products'],
+        summary: 'Own products (q, status, approval, page, pageSize)',
+        security: [{ bearerAuth: [] }],
+        responses: { '200': ok('{ items } + meta') },
+      },
+      post: {
+        tags: ['Seller products'],
+        summary: 'Create a product with variants and opening stock (status DRAFT or ACTIVE=submit for review)',
+        security: [{ bearerAuth: [] }],
+        responses: { '201': ok('{ product }'), '403': ok('Store not approved (submit only)'), '409': ok('SKU already in use'), '422': ok('Validation error') },
+      },
+    },
+    '/seller/products/{id}': {
+      get: { tags: ['Seller products'], summary: 'Own product detail', security: [{ bearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '200': ok('{ product }'), '404': ok('Not found or not yours') } },
+      put: { tags: ['Seller products'], summary: 'Full update (stock quantities of existing variants are not changed here)', security: [{ bearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '200': ok('{ product }'), '403': ok('Suspended or store not approved'), '409': ok('SKU clash or reserved stock') } },
+      delete: { tags: ['Seller products'], summary: 'Archive (soft); idempotent', security: [{ bearerAuth: [] }], parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }], responses: { '200': ok('{ product }') } },
+    },
+    '/uploads/product-images': {
+      post: {
+        tags: ['Uploads'],
+        summary: 'Upload up to 8 images (multipart field "files", JPEG/PNG/WebP, 5 MB each) to Cloudinary',
+        security: [{ bearerAuth: [] }],
+        responses: { '201': ok('{ images: [{ url, publicId }] }'), '400': ok('Invalid file'), '503': ok('Cloudinary not configured') },
+      },
+    },
+    '/sellers/me/logo': { post: { tags: ['Sellers'], summary: 'Upload store logo (multipart "file")', security: [{ bearerAuth: [] }], responses: { '200': ok('{ seller }') } } },
+    '/sellers/me/documents': { post: { tags: ['Sellers'], summary: 'Upload a demo verification document (multipart "file" + "type")', security: [{ bearerAuth: [] }], responses: { '201': ok('{ seller }') } } },
+    '/admin/products': { get: { tags: ['Admin'], summary: 'Submitted products (approval, q, sellerId, page)', security: [{ bearerAuth: [] }], responses: { '200': ok('{ items, approvalCounts } + meta') } } },
+    '/admin/products/{id}/{action}': {
+      post: {
+        tags: ['Admin'],
+        summary: 'approve | reject | suspend | reinstate (reject/suspend need { reason })',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'action', in: 'path', required: true, schema: { type: 'string', enum: ['approve', 'reject', 'suspend', 'reinstate'] } },
+        ],
+        responses: { '200': ok('{ product }'), '409': ok('Invalid transition') },
+      },
+    },
+    '/admin/categories': { get: { tags: ['Admin'], summary: 'All categories incl. inactive, with usage counts', security: [{ bearerAuth: [] }], responses: { '200': ok('{ categories }') } }, post: { tags: ['Admin'], summary: 'Create category', security: [{ bearerAuth: [] }], responses: { '201': ok('{ category }'), '409': ok('Duplicate') } } },
+    '/admin/brands': { get: { tags: ['Admin'], summary: 'All brands incl. inactive', security: [{ bearerAuth: [] }], responses: { '200': ok('{ brands }') } }, post: { tags: ['Admin'], summary: 'Create brand', security: [{ bearerAuth: [] }], responses: { '201': ok('{ brand }'), '409': ok('Duplicate') } } },
     '/admin/ping': {
       get: {
         tags: ['Admin'],
