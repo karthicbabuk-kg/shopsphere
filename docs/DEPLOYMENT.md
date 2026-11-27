@@ -90,3 +90,10 @@ Render: service > Events > Rollback to a previous deploy (the last two are kept)
 | Slow first request after idle | Expected: Render wakes in about a minute, Neon resumes in seconds |
 | Build fails at migrate | `DIRECT_URL` missing on Render, or the database is unreachable |
 | Images missing | Cloudinary variables missing; demo images are already hosted there |
+
+## Status of the Neon database (updated)
+The Neon project (`shopsphere`, Singapore, PostgreSQL 18, branch `production`) already has the schema, the admin account and the demo data applied (verified: 3 migrations, 27 categories, 20 brands, 39 products, 135 reviews, 5 buyers, 3 sellers). Step 2 of this guide is therefore done; start at step 3 (Render). The admin password for that database is stored only in your local, git-ignored `.env.neon`.
+
+Notes from the Neon verification:
+- Connection strings contain `sslmode=require`. The `pg` driver prints a harmless warning about it; use `sslmode=verify-full` in the Render variables to keep the same behaviour without the warning.
+- Do not run `neon deploy` or `neon env pull` without `--file .env.neon`: by default they write into `.env` and replace your local `DATABASE_URL`.

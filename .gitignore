@@ -13,3 +13,4 @@ test-results/
 apps/api/src/generated/
 e2e/.auth/
 .wrangler/
+.neon

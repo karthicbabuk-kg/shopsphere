@@ -32,5 +32,9 @@
     "prettier": "^3.10.1",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.74.0"
+  },
+  "dependencies": {
+    "@neon/config": "^1.14.8",
+    "@neon/env": "^2.1.11"
   }
 }

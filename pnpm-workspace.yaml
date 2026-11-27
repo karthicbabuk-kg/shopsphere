@@ -9,4 +9,4 @@ allowBuilds:
   "@scarf/scarf": false
 overrides:
   # GHSA-7589-6fvf-x4pw: reached only through the Prisma CLI config loader; pin the patched release.
-  effect: ">=3.22.1"
+  effect: "^3.22.1"

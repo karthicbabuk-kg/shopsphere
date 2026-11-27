@@ -63,3 +63,6 @@ Phases 1-11 prepared (deployment artifacts done and locally verified; the live d
 - Lighthouse: build the web app, run `vite preview` (4173) and point Lighthouse at it; use Chromium from the Playwright cache via CHROME_PATH.
 - Deployment: render.yaml (API, free plan, builds and migrates), Cloudflare Pages root dir apps/web with a Pages Function proxy (apps/web/functions) so the refresh cookie is first-party. The API sleeps when idle; the web shows a waking-up banner (store/slowApi.ts). Do not add a keep-alive pinger against /health (it wakes Neon and burns free compute hours).
 - Heredocs containing apostrophes or long text fail in the Bash tool; use the Write tool for files.
+- Neon CLI: `neon deploy` and `neon env pull` overwrite DATABASE_URL in .env (pointing local dev at Neon). Pull into the git-ignored file instead: `neon env pull --file .env.neon --services postgres`. Neon project: flat-recipe-33154396 (aws-ap-southeast-1, Postgres 18, branch production); the schema and demo data are already applied there.
+- The pnpm override for effect MUST stay on the 3.x line (^3.22.1): effect 4 breaks the Prisma CLI config loader (migrate fails with a TypeError).
+- Neon connection strings use sslmode=require; pg prints a harmless warning about it. Use sslmode=verify-full in Render env vars to keep today's behaviour and silence it.
