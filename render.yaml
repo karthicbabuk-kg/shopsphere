@@ -1,0 +1,49 @@
+# Render Blueprint for the ShopSphere API (free web service).
+# Create it from the Render dashboard: New > Blueprint > pick this repository.
+# Values marked `sync: false` are asked for once in the dashboard and are never stored in git.
+services:
+  - type: web
+    name: shopsphere-api
+    runtime: node
+    plan: free
+    region: singapore # keep the same region as the Neon database (Singapore) to avoid cross-region latency
+    branch: main
+    healthCheckPath: /api/v1/health
+    # NODE_ENV=production would make pnpm skip devDependencies (the Prisma CLI and esbuild live there),
+    # so install them explicitly. Migrations run at build time because pre-deploy commands are not
+    # available on the free plan. `migrate deploy` only applies pending, committed migrations.
+    buildCommand: >-
+      npm install -g pnpm@12.23.0 &&
+      pnpm install --frozen-lockfile --prod=false &&
+      pnpm --filter @shopsphere/api prisma:generate &&
+      pnpm --filter @shopsphere/api build &&
+      pnpm --filter @shopsphere/api migrate:prod
+    startCommand: node apps/api/dist/server.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "true" # public demo: password-reset tokens are returned instead of emailed. Set to false for anything real.
+      - key: COOKIE_SAMESITE
+        value: lax # the site proxies /api, so the refresh cookie is first-party
+      - key: DB_POOL_MAX
+        value: "5"
+      - key: DATABASE_URL # Neon POOLED connection string (host contains "-pooler")
+        sync: false
+      - key: DIRECT_URL # Neon DIRECT connection string, used for migrations
+        sync: false
+      - key: CORS_ORIGIN # exact site origin, e.g. https://shopsphere.pages.dev (no trailing slash)
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

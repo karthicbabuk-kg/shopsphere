@@ -10,8 +10,9 @@ export const REFRESH_COOKIE = 'ss_rt';
 const cookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProd,
-  // Frontend (Cloudflare Pages) and API (Render) are different sites in production.
-  sameSite: isProd ? 'none' : 'lax',
+  // Deployed behind the site's own /api proxy the cookie is first-party, so 'lax' works (COOKIE_SAMESITE=lax).
+  // Calling the API's domain directly from another site needs 'none' (and Secure), the production default.
+  sameSite: env.COOKIE_SAMESITE ?? (isProd ? 'none' : 'lax'),
   path: `${API_PREFIX}/auth`,
 };
 

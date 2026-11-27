@@ -20,3 +20,14 @@ Generate secrets: `node -e "console.log(require('crypto').randomBytes(32).toStri
 
 ## DEMO_MODE (changed in Phase 10)
 `DEMO_MODE` enables demo-only simulations, notably returning the password-reset token in the API response instead of emailing it. It defaults to **on** in development and test and **off** in production. A public demo deployment must set `DEMO_MODE=true` explicitly (documented in the deployment guide), so a production API never exposes reset tokens by accident.
+
+## Deployment variables (Phase 11)
+| Variable | Where | Purpose |
+|---|---|---|
+| `DATABASE_URL` | API | Runtime connection. On Neon use the **pooled** string (host contains `-pooler`) |
+| `DIRECT_URL` | API build and your shell | Direct (non-pooled) Neon string, used only by `prisma migrate deploy`; falls back to `DATABASE_URL` when unset |
+| `DB_POOL_MAX` | API | Maximum database connections per instance (default 5) |
+| `COOKIE_SAMESITE` | API | `lax` when the site proxies `/api` (the deployed setup), `none` only for direct cross-site calls; default `none` in production, `lax` otherwise |
+| `NODE_VERSION` | Render, Cloudflare | `22` |
+| `API_ORIGIN` | Cloudflare Pages (runtime variable) | Origin of the API for the `/api` proxy, e.g. `https://shopsphere-api.onrender.com` |
+| `VITE_API_URL` | Web build (optional) | Leave unset when using the proxy; set only to call an API domain directly |

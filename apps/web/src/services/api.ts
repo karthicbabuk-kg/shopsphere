@@ -2,14 +2,28 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { API_PREFIX } from '@shopsphere/shared-config';
 import type { ApiResponse } from '@shopsphere/shared-types';
 import { useAuth, type AuthUser } from '../store/auth';
+import { trackEnd, trackStart } from '../store/slowApi';
 
 /** In dev the Vite proxy forwards /api to the API; in prod VITE_API_URL points at Render. */
 const baseURL = `${import.meta.env.VITE_API_URL ?? ''}${API_PREFIX}`;
 
-export const api = axios.create({ baseURL, withCredentials: true, timeout: 30_000 });
+// 90 s: a sleeping free-tier API plus a suspended database can take well over 30 s to answer the first request.
+const TIMEOUT_MS = 90_000;
+export const api = axios.create({ baseURL, withCredentials: true, timeout: TIMEOUT_MS });
 
 // Bare client for the refresh call so it never triggers the 401 interceptor itself.
-const bare = axios.create({ baseURL, withCredentials: true, timeout: 30_000 });
+const bare = axios.create({ baseURL, withCredentials: true, timeout: TIMEOUT_MS });
+
+for (const client of [api, bare]) {
+  client.interceptors.request.use((config) => {
+    trackStart(config);
+    return config;
+  });
+}
+bare.interceptors.response.use(
+  (r) => { trackEnd(r.config); return r; },
+  (e: AxiosError) => { trackEnd(e.config); return Promise.reject(e); },
+);
 
 interface SessionPayload {
   accessToken: string;
@@ -43,8 +57,12 @@ api.interceptors.request.use((config) => {
 type Retryable = InternalAxiosRequestConfig & { _retried?: boolean };
 
 api.interceptors.response.use(
-  (r) => r,
+  (r) => {
+    trackEnd(r.config);
+    return r;
+  },
   async (error: AxiosError) => {
+    trackEnd(error.config);
     const original = error.config as Retryable | undefined;
     const isAuthCall = original?.url?.startsWith('/auth/');
     if (error.response?.status === 401 && original && !original._retried && !isAuthCall) {

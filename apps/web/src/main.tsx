@@ -8,6 +8,7 @@ import { theme } from './app/theme';
 import { router } from './app/router';
 import { AuthBootstrap } from './features/auth/AuthBootstrap';
 import { Toaster } from './components/Toaster';
+import { ServerWakeBanner } from './components/ServerWakeBanner';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -24,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
             <RouterProvider router={router} />
           </AuthBootstrap>
           <Toaster />
+            <ServerWakeBanner />
         </QueryClientProvider>
       </ThemeProvider>
     </StyledEngineProvider>

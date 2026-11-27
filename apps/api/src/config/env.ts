@@ -4,6 +4,13 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().default(4000),
   DATABASE_URL: z.string().min(1),
+  /**
+   * SameSite for the refresh cookie. 'lax' when the site proxies /api (same origin, the deployed setup);
+   * 'none' only if the browser talks to the API's own domain directly. Defaults: none in production, lax otherwise.
+   */
+  COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).optional(),
+  /** Maximum database connections held by this instance. */
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(50).default(5),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   /**
    * Demo simulations (e.g. returning the password-reset token instead of emailing it). On by default

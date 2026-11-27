@@ -31,11 +31,11 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-10 done (…reports, settlements, security review, accessibility and performance pass, CI). Next: Phase 11 (deployment: Neon, Render, Cloudflare Pages; bundle the API; set DEMO_MODE=true explicitly for the public demo).
+Phases 1-11 prepared (deployment artifacts done and locally verified; the live deployment needs the owner to create Neon, Render and Cloudflare accounts, see docs/DEPLOYMENT.md). Next: finish live deployment and checks, then Phase 12 (final demo guide, Ubuntu guide, remaining docs).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
-- API production build: shared packages export TypeScript source, so `node dist/server.js` will not run as-is; bundle the API (e.g. tsup/esbuild) in Phase 11.
+- API production build: `pnpm --filter @shopsphere/api build` bundles with esbuild (apps/api/scripts/build.mjs): workspace packages are bundled in, npm dependencies stay external. Run with `node apps/api/dist/server.js`.
 - Web keeps a non-secret `ss_session` localStorage hint so anonymous visitors skip the refresh call.
 - Seller suspension promises hidden products: the Phase 7 storefront queries MUST filter on `seller.status = APPROVED` as well as product approval.
 - E2E: `pnpm e2e` (Playwright, reuses running dev servers, tears down `@e2e.local` users). Tests live in `e2e/`.
@@ -61,3 +61,5 @@ Phases 1-10 done (…reports, settlements, security review, accessibility and pe
 - Accessibility is enforced by `e2e/a11y.spec.ts` (axe). Text colours must come from the tokens (contrast-checked); icon buttons need an accessible name that contains any visible text.
 - Below-the-fold home sections use `<Deferred>`; E2E tests must `scrollThrough(page)` before looking for them.
 - Lighthouse: build the web app, run `vite preview` (4173) and point Lighthouse at it; use Chromium from the Playwright cache via CHROME_PATH.
+- Deployment: render.yaml (API, free plan, builds and migrates), Cloudflare Pages root dir apps/web with a Pages Function proxy (apps/web/functions) so the refresh cookie is first-party. The API sleeps when idle; the web shows a waking-up banner (store/slowApi.ts). Do not add a keep-alive pinger against /health (it wakes Neon and burns free compute hours).
+- Heredocs containing apostrophes or long text fail in the Bash tool; use the Write tool for files.

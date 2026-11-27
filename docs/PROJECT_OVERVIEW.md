@@ -22,7 +22,7 @@ Neutral canvas + single blue accent, DM Sans/DM Mono, tonal rounded cards, proce
 | 8 | **Done.** Checkout (addresses, coupons, demo payments), multi-seller orders, tracking, seller fulfilment, cancel/return, review submission | multi-seller order test passes |
 | 9 | **Done.** Analytics, reports, commissions, CSV export, charts | numbers reconcile with DB |
 | 10 | **Done.** QA, Playwright E2E, accessibility, responsive, security review, performance | full suite green; see QA_REPORT.md and SECURITY.md |
-| 11 | Neon, Render, Cloudflare Pages, live verification | live E2E OK |
+| 11 | **Prepared.** Neon, Render, Cloudflare Pages: bundled API, Blueprint, same-origin proxy, waking banner, deployment guide. Live deployment and live E2E pending account creation | live E2E OK |
 | 12 | Demo guide, credentials, final docs | acceptance checklist complete |
 
 ## Risks and notes
