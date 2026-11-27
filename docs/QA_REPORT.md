@@ -47,3 +47,26 @@ Before this phase the mobile scores were Home 49, Search 55, Product 38 (CLS 0.3
 - Screen-reader walkthroughs with NVDA or VoiceOver (axe finds rule violations, not every usability problem).
 - Load testing; the oversell and idempotency races are tested with concurrent requests, not at volume.
 - Live deployment checks (Phase 11).
+
+
+## Live deployment checks (Phase 11, 2026-11-27)
+Site: https://shopsphere.karthicbabu333.workers.dev (Cloudflare Workers static assets + /api proxy) -> Render (Singapore, free) -> Neon (Singapore, PostgreSQL 18).
+
+| Check | Result |
+|---|---|
+| Home, deep links (/p/..., /account/orders), unknown API route | 200 / 200 / 404 as designed |
+| Health and product list through the proxy | ok, database up |
+| Login sets the refresh cookie (HttpOnly, Secure, SameSite=Lax) and /auth/refresh works from the cookie alone | yes |
+| Real browser (Chromium desktop and Pixel 7 profile): sign in, reload, still signed in; add to cart, reload cart | yes, no console errors |
+| Full business cycle through the live stack: register, address, coupon quote, UPI order, seller accept/process/pack/ship/deliver, review, return request/approve/receive, refund, admin report/orders/settings | all steps passed (18 s); test data then removed and stock, ratings and coupon counters verified restored |
+| Security headers and CSP on the live site | present; browser CSP violations: none (after fixing a Zod eval probe) |
+
+Lighthouse on the live site (mobile = simulated slow 4G with 4x CPU slowdown):
+
+| Page | Mobile perf | Desktop perf | Accessibility | Best practices | SEO |
+|---|---|---|---|---|---|
+| Home | 41 | 91 | 100 | 100 | 100 |
+| Search | 48 | 74 | 98 | 100 | 100 |
+| Product | 45 | 71 to 83 | 100 | 100 | 100 |
+
+Honest reading: the live mobile numbers are lower than the local-preview numbers earlier in this report (53 to 64), not higher as hoped. The cost is JavaScript execution on a throttled CPU before the first content can render (LCP render delay about 5 s), plus a fetch for the page data after the script loads. Lab scores also vary between runs (the figures above are single runs; Lighthouse sometimes fails to record a trace and has to be retried). Real devices on normal connections will feel faster than the throttled lab. Meaningful improvement would need server-side rendering or pre-rendering the public pages.
