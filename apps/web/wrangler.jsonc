@@ -13,6 +13,6 @@
   },
   "vars": {
     // Public address of the Render API (no trailing slash, no path). Not a secret.
-    "API_ORIGIN": "https://REPLACE-WITH-YOUR-RENDER-ADDRESS.onrender.com"
+    "API_ORIGIN": "https://shopsphere-api-cihi.onrender.com"
   }
 }
