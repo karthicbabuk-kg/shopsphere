@@ -1,4 +1,5 @@
 import { StrictMode } from 'react';
+import { z } from 'zod';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -10,6 +11,10 @@ import { AuthBootstrap } from './features/auth/AuthBootstrap';
 import { Toaster } from './components/Toaster';
 import { ServerWakeBanner } from './components/ServerWakeBanner';
 import './index.css';
+
+// Zod would otherwise probe for eval() to compile faster validators. Our CSP forbids eval (by design), so
+// switch that off up front: no CSP violation, same behaviour.
+z.config({ jitless: true });
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
