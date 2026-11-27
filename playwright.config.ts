@@ -11,6 +11,9 @@ export default defineConfig({
   globalTeardown: './e2e/global-teardown.ts',
   timeout: 60_000,
   expect: { timeout: 10_000 },
+  forbidOnly: !!process.env.CI,
+  // One retry on CI only; locally a failure should be visible, not hidden.
+  retries: process.env.CI ? 1 : 0,
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],

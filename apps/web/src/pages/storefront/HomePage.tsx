@@ -7,6 +7,7 @@ import {
 import Button from '@mui/material/Button';
 import { emailSchema } from '@shopsphere/shared-validation';
 import { HeroCarousel } from '../../components/store/HeroCarousel';
+import { Deferred } from '../../components/store/Deferred';
 import { ProductRail } from '../../components/store/ProductRail';
 import { useCoupons, useHome, type Coupon } from '../../features/storefront/storeApi';
 import { toast } from '../../store/toast';
@@ -152,10 +153,10 @@ export function HomePage() {
         </section>
       )}
 
-      <ProductRail title="Best sellers" subtitle="Top-rated and most purchased" items={home?.bestSellers} loading={isLoading} to="/search?sort=popular" />
-      <ProductRail title="Special offers" subtitle="Biggest discounts right now" items={home?.offers} loading={isLoading} />
-      <ProductRail title="New arrivals" subtitle="Just listed by our sellers" items={home?.newArrivals} loading={isLoading} to="/search?sort=newest" />
-      <ProductRail title="Recommended for you" subtitle="Highly rated by other shoppers" items={home?.recommended} loading={isLoading} to="/search?sort=rating" />
+      <Deferred><ProductRail title="Best sellers" subtitle="Top-rated and most purchased" items={home?.bestSellers} loading={isLoading} to="/search?sort=popular" /></Deferred>
+      <Deferred><ProductRail title="Special offers" subtitle="Biggest discounts right now" items={home?.offers} loading={isLoading} /></Deferred>
+      <Deferred><ProductRail title="New arrivals" subtitle="Just listed by our sellers" items={home?.newArrivals} loading={isLoading} to="/search?sort=newest" /></Deferred>
+      <Deferred><ProductRail title="Recommended for you" subtitle="Highly rated by other shoppers" items={home?.recommended} loading={isLoading} to="/search?sort=rating" /></Deferred>
 
       {home && home.sellers.length > 0 && (
         <section aria-labelledby="sellers-heading" className="py-8">

@@ -24,7 +24,7 @@ export function SalesChart({ data, height = 260 }: { data: { date: string; sales
     <figure className="m-0">
       <div role="img" aria-label={`Daily sales for the last ${data.length} days, ${formatINRWhole(total)} in total${total > 0 ? `, best day ${shortDate(best.date)} with ${formatINRWhole(best.salesPaise)}` : ''}`} style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} aria-hidden="true">
+          <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} accessibilityLayer={false}>
             <defs>
               <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={BLUE} stopOpacity={0.25} />
@@ -52,30 +52,11 @@ export function SalesChart({ data, height = 260 }: { data: { date: string; sales
   );
 }
 
-/** Horizontal ranked bars with the value printed on each row, so no hover is needed to read it. */
-export function RankedBars({ rows, format = formatINRWhole, label }: { rows: { name: string; value: number; hint?: string }[]; format?: (n: number) => string; label: string }) {
-  const max = Math.max(1, ...rows.map((r) => r.value));
-  return (
-    <ul aria-label={label} className="space-y-3">
-      {rows.map((r) => (
-        <li key={r.name}>
-          <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-            <span className="min-w-0 truncate font-medium">{r.name}</span>
-            <span className="shrink-0 font-medium tabular-nums">{format(r.value)}</span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-zone" aria-hidden="true"><div className="h-full rounded-full bg-blue-600" style={{ width: `${(r.value / max) * 100}%` }} /></div>
-          {r.hint && <p className="mt-0.5 text-xs text-muted">{r.hint}</p>}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function OrdersBars({ data, height = 120 }: { data: { date: string; orders: number }[]; height?: number }) {
   return (
     <div aria-hidden="true" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }} accessibilityLayer={false}>
           <XAxis dataKey="date" tickFormatter={shortDate} tick={AXIS} tickLine={false} axisLine={false} minTickGap={24} />
           <YAxis allowDecimals={false} tick={AXIS} tickLine={false} axisLine={false} width={28} />
           <Tooltip formatter={(v) => [String(v), 'Orders']} labelFormatter={(l) => shortDate(String(l))} contentStyle={{ borderRadius: 8, border: '1px solid #d5d9df', fontSize: 12 }} />

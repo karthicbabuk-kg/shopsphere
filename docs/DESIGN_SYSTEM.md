@@ -10,19 +10,19 @@ Name: **ShopSphere**. Logo: wordmark in DM Sans 700 with a circular "sphere" mar
 |---|---|---|
 | `navy-900` | `#0B1A52` | admin/seller sidebar, footer |
 | `navy-700` | `#0F2167` | primary brand, headings on dark |
-| `blue-600` | `#1F6FEB` | primary action, links, pins, focus |
-| `blue-700` | `#1A5CC4` | hover/pressed |
+| `blue-600` | `#1A5CC4` | primary action, links, pins, focus |
+| `blue-700` | `#164A9E` | hover/pressed |
 | `blue-50` | `#EAF2FE` | selected rows, info tint |
 | `saffron-500` | `#F59E0B` | buyer CTA (Buy now), offers, ratings |
 | `saffron-700` | `#B45309` | text on amber tint |
 | `ink` | `#24262A` | body text |
 | `muted` | `#55585E` | secondary text (AA on white) |
-| `faint` | `#73767C` | captions (large text only) |
+| `faint` | `#666A70` | captions and hints (4.5:1 or better on white and tinted surfaces) |
 | `canvas` | `#FAFAFA` | page background |
 | `surface` | `#FFFFFF` | cards, tables |
 | `zone` | `#E3E5E8` | tonal panels, inputs, chips |
 | `line` | `#D5D9DF` | 1px borders |
-| `success` `#16A34A` / `warning` `#D97706` / `danger` `#DC2626` / `info` `#1F6FEB` | status, each with a 50-tint for badges |
+| `success` `#15803D` / `warning` `#B45309` / `danger` `#DC2626` / `info` `#1A5CC4` | status, each with a 50-tint for badges |
 
 Contrast: all text pairs ≥ 4.5:1 (checked in Phase 10). Colour never carries meaning alone (badges include text/icon).
 
@@ -64,3 +64,5 @@ Durations 120ms (hover), 200ms (drawers/modals), 280ms (page). Easing `cubic-bez
 
 ## Tech notes
 Tailwind for layout/spacing/utility; MUI for complex widgets (DataGrid-lite alternatives avoided; Dialog, Autocomplete, DatePicker, Menu) themed via `createTheme` from the same tokens. Preflight conflicts resolved with MUI `StyledEngineProvider injectFirst`. Fonts self-hosted (Fontsource) with `font-display: swap`.
+
+**Contrast revision (Phase 10).** An automated axe scan showed the original blue, green, amber and grey text colours fell below WCAG AA (4.5:1) on white or tinted backgrounds. The tokens above are the corrected values; the logo, illustrations and chart strokes keep the brighter brand blue because graphics only need 3:1.

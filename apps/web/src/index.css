@@ -11,19 +11,19 @@
 
   --color-navy-900: #0b1a52;
   --color-navy-700: #0f2167;
-  --color-blue-600: #1f6fea;
-  --color-blue-700: #1a5cc4;
+  --color-blue-600: #1a5cc4;
+  --color-blue-700: #164a9e;
   --color-blue-50: #eaf2fe;
   --color-saffron-500: #f59e0b;
   --color-saffron-700: #b45309;
   --color-ink: #24262a;
   --color-muted: #55585e;
-  --color-faint: #73767c;
+  --color-faint: #666a70;
   --color-canvas: #fafafa;
   --color-zone: #e3e5e8;
   --color-line: #d5d9df;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
+  --color-success: #15803d;
+  --color-warning: #b45309;
   --color-danger: #dc2626;
 
   --radius-sm: 8px;
@@ -72,4 +72,14 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* Hero slide transition. Disabled for visitors who prefer reduced motion. */
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.slide-in { animation: slide-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .slide-in { animation: none; }
 }

@@ -6,7 +6,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { StatCard } from '../../components/StatCard';
 import { EmptyState } from '../../components/EmptyState';
 import { useOverview } from '../../features/admin/adminApi';
-import { SalesChart } from '../../components/charts/Charts';
+import { SalesChart } from '../../components/charts/LazyCharts';
 import { useAdminReport } from '../../features/reports/reportsApi';
 import { formatDate, formatINRWhole } from '../../utils/format';
 

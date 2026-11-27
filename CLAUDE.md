@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-9 done (…checkout and orders, reports and charts, CSV exports, settlements, admin orders and settings). Next: Phase 10 (QA, security review, accessibility and performance audit, E2E hardening).
+Phases 1-10 done (…reports, settlements, security review, accessibility and performance pass, CI). Next: Phase 11 (deployment: Neon, Render, Cloudflare Pages; bundle the API; set DEMO_MODE=true explicitly for the public demo).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -57,3 +57,7 @@ Phases 1-9 done (…checkout and orders, reports and charts, CSV exports, settle
 - E2E order tests create their own seller and product (`createSellerWithLiveProduct`) so demo stock is untouched; teardown also removes orders and reviews and recounts coupon usage.
 - Report definitions live in `modules/reports/reports.service.ts` (sales excludes CANCELLED/RETURNED; sales = commission + net + delivery). Charts use recharts via `components/charts/Charts.tsx` with a hidden data table for screen readers. CSV cells go through `utils/csv.ts` (formula-injection safe); never build CSV by hand.
 - E2E tests that change platform settings must wait for the form to load before reading values and must restore them.
+- Security rules live in `docs/SECURITY.md`; `security.test.ts` walks the route table, so register new routers in its GROUPS list. New write endpoints that cost something or can be guessed at need a limiter from `middleware/limiters.ts`.
+- Accessibility is enforced by `e2e/a11y.spec.ts` (axe). Text colours must come from the tokens (contrast-checked); icon buttons need an accessible name that contains any visible text.
+- Below-the-fold home sections use `<Deferred>`; E2E tests must `scrollThrough(page)` before looking for them.
+- Lighthouse: build the web app, run `vite preview` (4173) and point Lighthouse at it; use Chromium from the Playwright cache via CHROME_PATH.

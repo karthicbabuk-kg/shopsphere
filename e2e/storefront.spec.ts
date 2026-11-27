@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { PASSWORD } from './helpers';
+import { PASSWORD, scrollThrough } from './helpers';
 
 const stampOf = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 
@@ -19,6 +19,8 @@ test('browse, search, filter and sort the catalogue as a guest', async ({ page }
 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Trending now' })).toBeVisible();
+  // Sections below the fold render when they near the viewport.
+  await scrollThrough(page);
   await expect(page.getByRole('heading', { name: 'New arrivals' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Shop by category' })).toBeVisible();
   await expect(page.getByText('WELCOME10')).toBeVisible();

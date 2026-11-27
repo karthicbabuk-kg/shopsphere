@@ -144,3 +144,12 @@ export async function deliveredOrderViaApi(request: APIRequestContext, seller: {
   }
   return { orderNo: order.data.order.orderNo as string, totalPaise: order.data.order.totalPaise as number };
 }
+
+/** Scrolls to the bottom (repeatedly, as sections load on demand) and back, so lazily rendered sections exist. */
+export async function scrollThrough(page: Page) {
+  for (let i = 0; i < 6; i++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(200);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+}

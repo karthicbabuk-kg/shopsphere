@@ -7,7 +7,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { StatCard } from '../../components/StatCard';
 import { useInventorySummary } from '../../features/inventory/inventoryApi';
 import { useSellerProfile } from '../../features/seller/sellerApi';
-import { SalesChart } from '../../components/charts/Charts';
+import { SalesChart } from '../../components/charts/LazyCharts';
 import { useSellerReport } from '../../features/reports/reportsApi';
 import { formatINRWhole } from '../../utils/format';
 

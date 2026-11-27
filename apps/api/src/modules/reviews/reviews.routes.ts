@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { reviewSchema } from '@shopsphere/shared-validation';
 import { prisma } from '../../database/prisma.js';
 import { authenticate, requireRole } from '../../middleware/auth.js';
+import { reviewLimiter } from '../../middleware/limiters.js';
 import { validateBody } from '../../middleware/validate.js';
 import { AppError } from '../../utils/errors.js';
 
@@ -35,7 +36,7 @@ reviewsRouter.get('/mine/:productId', async (req, res) => {
 });
 
 /** Creates or updates the buyer's review (one per product) and refreshes the product's rating. */
-reviewsRouter.put('/:productId', validateBody(reviewSchema), async (req, res) => {
+reviewsRouter.put('/:productId', reviewLimiter, validateBody(reviewSchema), async (req, res) => {
   const userId = req.user!.id;
   const productId = id(req.params.productId);
   if (!(await hasPurchased(userId, productId))) {

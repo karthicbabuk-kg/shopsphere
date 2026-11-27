@@ -17,3 +17,6 @@ Copy `.env.example` to `.env` (git-ignored). Never put secrets in the frontend; 
 | `VITE_API_URL` | web | API origin in production (empty in dev; Vite proxy is used) |
 
 Generate secrets: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`.
+
+## DEMO_MODE (changed in Phase 10)
+`DEMO_MODE` enables demo-only simulations, notably returning the password-reset token in the API response instead of emailing it. It defaults to **on** in development and test and **off** in production. A public demo deployment must set `DEMO_MODE=true` explicitly (documented in the deployment guide), so a production API never exposes reset tokens by accident.

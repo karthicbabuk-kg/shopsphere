@@ -48,7 +48,7 @@ export function NotificationBell() {
         onClick={(e) => setAnchor(e.currentTarget)}
         aria-label={`Notifications${unread ? `, ${unread} unread` : ''}`}
       >
-        <Badge badgeContent={unread} color="warning" max={9}>
+        <Badge badgeContent={unread || undefined} color="warning" max={9}>
           <Bell size={20} />
         </Badge>
       </IconButton>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import Skeleton from '@mui/material/Skeleton';
 import type { HomeData } from '../../features/storefront/storeApi';
@@ -17,8 +16,20 @@ interface Slide {
 }
 
 /** Hero banner built from live catalogue data so it can never point at a missing product. */
+/** True when the visitor asked the OS to reduce motion; the slideshow then neither animates nor auto-advances. */
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return reduced;
+}
+
 export function HeroCarousel({ home }: { home?: HomeData }) {
-  const reduced = useReducedMotion();
+  const reduced = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [hovered, setHovered] = useState(false);
@@ -74,17 +85,13 @@ export function HeroCarousel({ home }: { home?: HomeData }) {
       className="relative overflow-hidden rounded-xl bg-navy-700 text-white"
       style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,.09) 1.2px, transparent 1.6px)', backgroundSize: '26px 26px' }}
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
+      {/* Keyed so each slide remounts and plays the CSS fade-in (no animation library needed). */}
+      <div
           key={index}
           role="group"
           aria-roledescription="slide"
           aria-label={`${(index % count) + 1} of ${count}`}
-          initial={reduced ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduced ? undefined : { opacity: 0, y: -8 }}
-          transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
-          className="grid min-h-[420px] items-center gap-8 px-6 py-10 md:min-h-[380px] md:grid-cols-[1.05fr_1fr] md:px-12"
+          className="slide-in grid min-h-[420px] items-center gap-8 px-6 py-10 md:min-h-[380px] md:grid-cols-[1.05fr_1fr] md:px-12"
         >
           <div>
             <p className="inline-flex items-center gap-2 font-mono text-xs tracking-wider text-saffron-500 uppercase">
@@ -114,12 +121,11 @@ export function HeroCarousel({ home }: { home?: HomeData }) {
               </li>
             ))}
           </ul>
-        </motion.div>
-      </AnimatePresence>
+        </div>
 
       {count > 1 && (
         <div className="absolute right-4 bottom-4 flex items-center gap-2 md:right-8">
-          <div className="flex gap-1.5" role="group" aria-label="Choose slide">
+          <div className="flex" role="group" aria-label="Choose slide">
             {slides.map((s, i) => (
               <button
                 key={s.eyebrow}
@@ -127,8 +133,11 @@ export function HeroCarousel({ home }: { home?: HomeData }) {
                 aria-label={`Show slide ${i + 1}: ${s.eyebrow}`}
                 aria-current={i === index % count}
                 onClick={() => setIndex(i)}
-                className={`h-2.5 rounded-full transition-all ${i === index % count ? 'w-7 bg-saffron-500' : 'w-2.5 bg-white/40 hover:bg-white/70'}`}
-              />
+                className="group grid h-6 min-w-6 place-items-center"
+              >
+                {/* The visible dot stays small; the button around it is a 24px-tall touch target. */}
+                <span className={`block h-2.5 rounded-full transition-all ${i === index % count ? 'w-7 bg-saffron-500' : 'w-2.5 bg-white/40 group-hover:bg-white/70'}`} />
+              </button>
             ))}
           </div>
           <button type="button" aria-label="Previous slide" onClick={() => setIndex((i) => (i - 1 + count) % count)} className="grid h-9 w-9 place-items-center rounded-full bg-white/15 hover:bg-white/25"><ChevronLeft size={18} /></button>

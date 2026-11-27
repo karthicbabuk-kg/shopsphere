@@ -10,6 +10,7 @@ import {
   sellerOrderListQuerySchema,
 } from '@shopsphere/shared-validation';
 import { authenticate, requireRole } from '../../middleware/auth.js';
+import { orderLimiter, quoteLimiter } from '../../middleware/limiters.js';
 import { validateBody } from '../../middleware/validate.js';
 import { AppError } from '../../utils/errors.js';
 import * as orders from './orders.service.js';
@@ -20,7 +21,7 @@ const noStore = (res: import('express').Response) => res.set('Cache-Control', 'n
 /** POST /checkout/quote — server-side price, delivery, discount and tax for the current cart. */
 export const checkoutRouter = Router();
 checkoutRouter.use(authenticate, requireRole('BUYER'));
-checkoutRouter.post('/quote', validateBody(quoteSchema), async (req, res) => {
+checkoutRouter.post('/quote', quoteLimiter, validateBody(quoteSchema), async (req, res) => {
   noStore(res);
   res.json({ success: true, data: await orders.quote(req.user!.id, req.body.couponCode) });
 });
@@ -29,7 +30,7 @@ checkoutRouter.post('/quote', validateBody(quoteSchema), async (req, res) => {
 export const ordersRouter = Router();
 ordersRouter.use(authenticate, requireRole('BUYER'));
 
-ordersRouter.post('/', validateBody(placeOrderSchema), async (req, res) => {
+ordersRouter.post('/', orderLimiter, validateBody(placeOrderSchema), async (req, res) => {
   const header = req.header('Idempotency-Key');
   if (header !== undefined && !/^[A-Za-z0-9_-]{8,80}$/.test(header)) {
     throw AppError.badRequest('Idempotency-Key must be 8-80 letters, numbers, dashes or underscores');

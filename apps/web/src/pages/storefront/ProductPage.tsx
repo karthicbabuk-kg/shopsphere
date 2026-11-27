@@ -90,9 +90,16 @@ export function ProductPage() {
   }
   if (isLoading || !p) {
     return (
-      <div className="mx-auto grid max-w-[1280px] gap-8 px-4 py-6 lg:grid-cols-[minmax(0,560px)_1fr]">
-        <Skeleton variant="rounded" sx={{ aspectRatio: '1 / 1', height: 'auto' }} />
-        <div><Skeleton width="80%" height={40} /><Skeleton width="40%" /><Skeleton width="30%" height={48} /><Skeleton variant="rounded" height={160} /></div>
+      // Mirrors the loaded layout (container, breadcrumb row, thumbnail rail, columns) so nothing jumps when data arrives.
+      <div className="mx-auto min-h-[1100px] max-w-[1280px] px-4 py-5 pb-28 lg:pb-8" aria-busy="true">
+        <div className="mb-4 h-5"><Skeleton width={220} /></div>
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,580px)_1fr] xl:gap-12">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row">
+            <div className="hidden gap-2 sm:flex sm:flex-col">{[0, 1, 2].map((i) => <Skeleton key={i} variant="rounded" width={72} height={72} />)}</div>
+            <Skeleton variant="rounded" sx={{ aspectRatio: '1 / 1', height: 'auto', flex: 1 }} />
+          </div>
+          <div><Skeleton width="80%" height={40} /><Skeleton width="40%" /><Skeleton width="30%" height={48} /><Skeleton variant="rounded" height={160} /></div>
+        </div>
       </div>
     );
   }

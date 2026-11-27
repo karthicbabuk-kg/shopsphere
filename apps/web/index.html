@@ -6,10 +6,16 @@
     <meta name="description" content="ShopSphere – a multi-vendor marketplace demo." />
     <meta name="theme-color" content="#0F2167" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Product images come from Cloudinary: open the connection early so the first image is not delayed. -->
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <title>ShopSphere</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static shell painted before the JavaScript arrives; React replaces it. -->
+      <div style="height:64px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #d5d9df;background:#fff;font:700 22px/1 system-ui,sans-serif;color:#0f2167">ShopSphere</div>
+    </div>
+    <noscript>ShopSphere needs JavaScript to run. Please enable it in your browser.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

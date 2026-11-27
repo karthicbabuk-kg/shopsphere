@@ -59,10 +59,10 @@ function HeaderIcons() {
   return (
     <div className="flex items-center">
       <IconButton aria-label={`Wishlist${wl?.ids.length ? `, ${wl.ids.length} items` : ''}`} onClick={() => gate(() => navigate('/wishlist'))}>
-        <Badge badgeContent={wl?.ids.length} color="primary" max={99}><Heart size={22} /></Badge>
+        <Badge badgeContent={wl?.ids.length || undefined} color="primary" max={99}><Heart size={22} /></Badge>
       </IconButton>
       <IconButton aria-label={`Cart${cart?.itemCount ? `, ${cart.itemCount} items` : ''}`} onClick={() => gate(() => navigate('/cart'))}>
-        <Badge badgeContent={cart?.itemCount} color="warning" max={99}><ShoppingCart size={22} /></Badge>
+        <Badge badgeContent={cart?.itemCount || undefined} color="warning" max={99}><ShoppingCart size={22} /></Badge>
       </IconButton>
     </div>
   );

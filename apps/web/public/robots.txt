@@ -1,0 +1,10 @@
+# ShopSphere is a demonstration site. Public storefront pages may be indexed; private areas may not.
+User-agent: *
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+Disallow: /seller
+Disallow: /admin
+Disallow: /login
+Disallow: /register

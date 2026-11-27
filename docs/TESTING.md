@@ -9,3 +9,9 @@
 
 Setup: `docker compose up -d db`, migrate the test DB (`DATABASE_URL=$TEST_DATABASE_URL pnpm --filter @shopsphere/api prisma:deploy`), `pnpm exec playwright install chromium`.
 Results are recorded per phase in the project status reports; this file lists what exists, not claims of completeness.
+
+## Phase 10 additions
+- `apps/api/test/security.test.ts`: walks the real route table (authorization matrix: 401 without token, 403 for every other role, never 5xx for garbage ids), forged and unsigned tokens, role escalation at registration, account enumeration, headers, CORS, malformed and oversized bodies, injection payloads in search, cart and order abuse.
+- `e2e/a11y.spec.ts`: axe-core WCAG 2.0/2.1 A and AA scans of public, buyer, seller and admin pages (any violation fails).
+- Lighthouse is run manually against `pnpm --filter @shopsphere/web build` plus `vite preview` (port 4173); results are in `QA_REPORT.md`.
+- `.github/workflows/ci.yml` runs audit, typecheck, lint, tests, build and the browser suite. It has not yet been executed on GitHub.

@@ -53,7 +53,8 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
   app.use(
-    rateLimit({ windowMs: 60_000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false }),
+    // Production only, like the other limiters: automated tests send far more than a person would.
+    rateLimit({ windowMs: 60_000, limit: env.NODE_ENV === 'production' ? 300 : 100_000, standardHeaders: 'draft-7', legacyHeaders: false }),
   );
 
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi));
