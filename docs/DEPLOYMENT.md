@@ -5,8 +5,8 @@ Everything below uses free plans. Do the steps in order; each one produces a val
 Architecture:
 
 ```
-Browser ──> Cloudflare Pages (static site)
-              └─ /api/*  ──(Pages Function proxy)──> Render (Express API) ──> Neon (PostgreSQL)
+Browser ──> Cloudflare (static site)
+              └─ /api/*  ──(Worker proxy)──> Render (Express API) ──> Neon (PostgreSQL)
                                                           └──> Cloudinary (images)
 ```
 
@@ -57,16 +57,20 @@ Close the PowerShell window afterwards so the variables disappear. Skip `demo:se
 
 `DEMO_MODE` is set to `true` in `render.yaml` on purpose (a public demo has no email delivery, so password-reset tokens are shown on screen). Change it to `false` if this ever holds real accounts.
 
-## 4. Cloudflare Pages (website)
-1. **Workers & Pages > Create > Pages > Connect to Git**, choose the repository.
-2. Build settings:
+## 4. Cloudflare (website and /api proxy)
+Cloudflare now creates **Workers** projects (static assets plus a small Worker) from the Connect-to-Git flow; the repo is configured for that (`apps/web/wrangler.jsonc`).
+1. **Workers & Pages > Create > Import a repository**, choose the repository.
+2. Settings:
+   - **Project name:** `shopsphere` (must equal `name` in `apps/web/wrangler.jsonc`; if you use another name, change it there)
    - **Root directory:** `apps/web`
    - **Build command:** `npm install -g pnpm@12.23.0 && pnpm install --frozen-lockfile && pnpm build`
-   - **Build output directory:** `dist`
-   - Environment variable `NODE_VERSION` = `22`
-3. Add the runtime variable for the proxy (Settings > Variables and Secrets, **Production**): `API_ORIGIN` = `https://<name>.onrender.com` (no path, no trailing slash). Do **not** set `VITE_API_URL`; the site calls its own `/api`.
-4. Deploy, then open the site address (`https://<project>.pages.dev`).
-5. Go back to Render and make sure `CORS_ORIGIN` equals that exact address; redeploy if you changed it.
+   - **Deploy command:** `npx wrangler deploy`
+   - Variable `NODE_VERSION` = `22` (plain text)
+3. The API address is a plain (non-secret) variable in `apps/web/wrangler.jsonc`: set `vars.API_ORIGIN` to your Render address (no path, no trailing slash) and push. Do not also set it in the dashboard (the file wins on each deploy).
+4. Deploy, then open the site address shown by Cloudflare (`https://shopsphere.<account>.workers.dev`).
+5. On Render set `CORS_ORIGIN` to that exact address (no trailing slash).
+
+Only `/api/*` runs Worker code; the site files are served directly, so normal browsing does not use the Worker request allowance.
 
 ## 5. Verify the live site (tell me when it is up and I will run the live checks)
 - `https://<site>/api/v1/health` returns ok through the proxy.

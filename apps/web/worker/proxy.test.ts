@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MAX_ATTEMPTS, proxyToApi } from './_proxy';
+import { MAX_ATTEMPTS, proxyToApi } from './proxy';
 
 const env = { API_ORIGIN: 'https://api.example.com' };
 const noSleep = () => Promise.resolve();

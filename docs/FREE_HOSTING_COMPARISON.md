@@ -7,7 +7,7 @@ Checked on 2026-11-27 against the providers' own pages (linked). Free tiers chan
 |---|---|---|
 | Database | **Neon** (PostgreSQL, Singapore) | Real Postgres with trigram indexes, no expiry on the free plan |
 | API | **Render** free web service (Singapore) | Runs a normal Node server; no code changes for serverless |
-| Website | **Cloudflare Pages** (+ a Pages Function that proxies `/api`) | Static hosting with unlimited bandwidth; the proxy makes the login cookie first-party |
+| Website | **Cloudflare** (Workers static assets + a Worker that proxies `/api`) | Static hosting with unlimited bandwidth; the proxy makes the login cookie first-party |
 | Images | **Cloudinary** (already in use) | Hosts the product images |
 
 ## Limits that matter for this project
