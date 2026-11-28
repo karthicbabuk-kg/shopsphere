@@ -3,14 +3,17 @@
 Modular monolith: one React SPA (role-based routes) + one Express API + one PostgreSQL database.
 
 ```
-Browser (React SPA, Cloudflare Pages)
-   │  HTTPS, JSON, httpOnly refresh cookie + Bearer access token
+Browser (React SPA)
+   │  same origin: https://<site>/ and /api/*  (httpOnly refresh cookie + Bearer access token)
    ▼
-Express API /api/v1 (Render free web service)
-   ├─ middleware: helmet, cors, rate-limit, request-id, pino logger, auth, rbac, validate (Zod), error handler
-   ├─ modules/*  (routes → controller → service → repository(Prisma))
-   ├─ Prisma ──► PostgreSQL (Docker locally, Neon in prod)
-   └─ Cloudinary (signed uploads; images never stored on API disk)
+Cloudflare Worker (static assets + /api proxy; retries while the API wakes up)
+   │  /api/* only
+   ▼
+Express API /api/v1 (Render free web service, bundled with esbuild)
+   ├─ middleware: helmet, cors, rate-limit (production), request-id, pino logger (redacted), auth, rbac, validate (Zod), error handler
+   ├─ modules/*  (routes → service → Prisma; business rules live in services)
+   ├─ Prisma + pg ──► PostgreSQL (Docker locally, Neon in production)
+   └─ Cloudinary (uploads; images never stored on the API disk)
 ```
 
 ## Repository layout
@@ -40,15 +43,16 @@ As specified in the brief (`apps/web`, `apps/api`, `packages/shared-{types,valid
 | Testing | Vitest (unit), Supertest against a `shopsphere_test` DB (integration, includes concurrent-stock test), Playwright (E2E demo flow) |
 
 ## Frontend structure
-`app/` (providers, router, theme) · `layouts/` (StorefrontLayout, SellerLayout, AdminLayout) · `pages/{storefront,buyer,seller,admin}` · `features/` (auth, cart, catalog, inventory, orders…, each with api hooks + components) · `services/` (axios client with refresh interceptor) · `store/` (small Zustand store for auth/cart UI; server state in TanStack Query) · route-level `React.lazy` code splitting, role guards, scroll restoration, `_redirects` SPA fallback on Cloudflare Pages.
+`app/` (providers, router, theme) · `layouts/` (StorefrontLayout, SellerLayout, AdminLayout) · `pages/{storefront,buyer,seller,admin}` · `features/` (auth, cart, catalog, inventory, orders…, each with api hooks + components) · `services/` (axios client with refresh interceptor) · `store/` (small Zustand store for auth/cart UI; server state in TanStack Query) · route-level `React.lazy` code splitting, role guards, below-the-fold sections rendered on demand (`Deferred`), SPA fallback configured in `wrangler.jsonc`.
 
 ## Environments
 | | Local | Production |
 |---|---|---|
-| DB | Docker Desktop `postgres:16-alpine` | Neon (pooled URL for app, direct URL for migrations) |
-| API | `pnpm dev` (tsx watch) | Render, `/health` check |
-| Web | Vite dev, proxy `/api` | Cloudflare Pages |
-| Images | Cloudinary (dev folder) | Cloudinary |
+| DB | Docker Desktop `postgres:16-alpine` | Neon PostgreSQL 18 (pooled URL for the app, direct URL for migrations) |
+| API | `pnpm dev` (tsx watch) | Render free web service (`node apps/api/dist/server.js`), health check `/api/v1/health` |
+| Web | Vite dev server, proxies `/api` | Cloudflare Workers static assets; a Worker proxies `/api/*` so the login cookie is first-party |
+| Images | Cloudinary | Cloudinary |
+| Self-hosted alternative | | Ubuntu VPS: nginx + systemd + local PostgreSQL (see `UBUNTU_DEPLOYMENT.md`) |
 
-## Versions (pinned at Phase 2 after `pnpm view` checks)
-Node 22 LTS · pnpm 9/10 · React 18/19 · Vite 6+ · TypeScript 5.x · Prisma 6.x · Express 4/5 · MUI 6/7 · Tailwind 3.4/4 · Postgres 16. Exact numbers recorded in README once installed.
+## Versions (as built)
+Node 22 · pnpm 12 · React 19 · Vite 8 · TypeScript 5.9 · Prisma 7 (adapter-pg) · Express 5 · Zod 4 · MUI 9 · Tailwind 4 · PostgreSQL 16 locally, 18 on Neon. `CLAUDE.md` explains why some are pinned.

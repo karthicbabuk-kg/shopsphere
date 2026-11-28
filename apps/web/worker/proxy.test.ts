@@ -27,15 +27,36 @@ describe('API proxy', () => {
     expect(h.has('host')).toBe(false);
   });
 
-  it('retries while the API instance is waking, resending the same body', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(waking()).mockRejectedValueOnce(new Error('reset')).mockResolvedValueOnce(ok());
+  it('wakes a sleeping API with one clean health request, then retries the real request with the same body', async () => {
+    // real request -> asleep; clean wake probe -> awake; real request again -> ok
+    const fetchMock = vi.fn().mockResolvedValueOnce(waking()).mockResolvedValueOnce(ok()).mockResolvedValueOnce(ok());
     const sleep = vi.fn(noSleep);
-    const req = new Request('https://s.pages.dev/api/v1/orders', { method: 'POST', body: 'payload' });
+    const req = new Request('https://s.pages.dev/api/v1/orders', { method: 'POST', body: 'payload', headers: { cookie: 'ss_rt=abc', 'cf-ray': 'x' } });
     const res = await proxyToApi(req, env, asFetch(fetchMock), sleep);
     expect(res.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(sleep).not.toHaveBeenCalled(); // the probe succeeded, so no waiting between attempts
+
+    const [probeUrl, probeInit] = fetchMock.mock.calls[1] as unknown as [URL, RequestInit];
+    expect(String(probeUrl)).toBe('https://api.example.com/api/v1/health');
+    expect(probeInit.method).toBe('GET');
+    // The probe carries no browser, cookie or Cloudflare headers: only what is needed.
+    expect(Object.keys(probeInit.headers as Record<string, string>)).toEqual(['accept']);
+    for (const i of [0, 2]) expect(new TextDecoder().decode(((fetchMock.mock.calls[i] as unknown[])[1] as RequestInit).body as ArrayBuffer)).toBe('payload');
+  });
+
+  it('keeps retrying with pauses when the wake probe fails or the connection drops', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('reset')) // real request
+      .mockResolvedValueOnce(waking()) // probe: still asleep
+      .mockResolvedValueOnce(waking()) // real request again
+      .mockResolvedValueOnce(ok());
+    const sleep = vi.fn(noSleep);
+    const res = await proxyToApi(new Request('https://s.pages.dev/api/v1/cart'), env, asFetch(fetchMock), sleep);
+    expect(res.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(sleep).toHaveBeenCalledTimes(2);
-    for (const c of fetchMock.mock.calls) expect(new TextDecoder().decode((c[1] as RequestInit).body as ArrayBuffer)).toBe('payload');
   });
 
   it('never retries a real application error', async () => {
@@ -50,9 +71,12 @@ describe('API proxy', () => {
   it('gives up with a clear JSON error after the last attempt', async () => {
     const fetchMock = vi.fn(async () => waking());
     const res = await proxyToApi(new Request('https://s.pages.dev/api/v1/health'), env, asFetch(fetchMock), noSleep);
-    expect(fetchMock).toHaveBeenCalledTimes(MAX_ATTEMPTS);
+    expect(fetchMock).toHaveBeenCalledTimes(MAX_ATTEMPTS + 1); // every real attempt plus a single wake probe
     expect(res.status).toBe(503);
-    expect((await res.json()).error.code).toBe('API_UNAVAILABLE');
+    const err = (await res.json()).error;
+    expect(err.code).toBe('API_UNAVAILABLE');
+    // Diagnostics: what the platform actually answered, so the cause is visible rather than guessed.
+    expect(err.details).toMatchObject({ attempts: MAX_ATTEMPTS, lastResponse: { status: 503, contentType: 'text/html' }, wakeProbe: { status: 503 } });
   });
 
   it('refuses to run unconfigured and never forwards non-API paths', async () => {

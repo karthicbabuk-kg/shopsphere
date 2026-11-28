@@ -7,8 +7,8 @@ import { trackEnd, trackStart } from '../store/slowApi';
 /** In dev the Vite proxy forwards /api to the API; in prod VITE_API_URL points at Render. */
 const baseURL = `${import.meta.env.VITE_API_URL ?? ''}${API_PREFIX}`;
 
-// 90 s: a sleeping free-tier API plus a suspended database can take well over 30 s to answer the first request.
-const TIMEOUT_MS = 90_000;
+// 120 s: a sleeping free-tier API plus a suspended database can take well over 30 s to answer the first request.
+const TIMEOUT_MS = 120_000;
 export const api = axios.create({ baseURL, withCredentials: true, timeout: TIMEOUT_MS });
 
 // Bare client for the refresh call so it never triggers the 401 interceptor itself.
