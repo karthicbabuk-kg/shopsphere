@@ -1,5 +1,11 @@
 export const API_PREFIX = '/api/v1';
 
+/**
+ * Database-free liveness endpoint. One definition shared by the API (where it is mounted), the edge
+ * proxy and the browser (which wake a sleeping free-tier API through it), so they can never disagree.
+ */
+export const PING_PATH = `${API_PREFIX}/ping`;
+
 /** Money is always integer paise. */
 export const toPaise = (rupees: number): number => Math.round(rupees * 100);
 /** ₹1,299 for whole rupees, ₹1,299.50 when paise are present. */

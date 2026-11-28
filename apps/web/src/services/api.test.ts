@@ -1,3 +1,4 @@
+import { PING_PATH } from '@shopsphere/shared-config';
 import axios, { AxiosError, type AxiosAdapter, type InternalAxiosRequestConfig } from 'axios';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -22,7 +23,7 @@ const { api, refreshFailedTransiently, refreshSession, wake } = await import('./
 const { useAuth } = await import('../store/auth');
 
 const session = { success: true, data: { accessToken: 'tok', user: { id: 'u1', role: 'BUYER', name: 'A', email: 'a@b.co', phone: null } } };
-const WAKE_URL = 'https://api.example.com/api/v1/ping';
+const WAKE_URL = `https://api.example.com${PING_PATH}`;
 const unavailable = (wakeUrl: string = WAKE_URL) => ({
   status: 503,
   data: { success: false, error: { code: 'API_UNAVAILABLE', message: 'starting', details: { wakeUrl } } },

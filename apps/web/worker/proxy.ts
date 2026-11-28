@@ -14,6 +14,8 @@
  * known to wake the instance. If everything fails, the error carries what the platform answered so
  * the cause can be diagnosed instead of guessed.
  */
+import { PING_PATH } from '@shopsphere/shared-config';
+
 export interface ProxyEnv {
   /** Origin of the API, e.g. https://shopsphere-api.onrender.com (no trailing path). */
   API_ORIGIN?: string;
@@ -80,7 +82,7 @@ export async function proxyToApi(
     if (!wakeResult) {
       // One clean request, exactly the shape that wakes a sleeping instance, awaited so we do not hammer it.
       try {
-        const probe = await fetchImpl(new URL('/api/v1/ping', origin), {
+        const probe = await fetchImpl(new URL(PING_PATH, origin), {
           method: 'GET',
           headers: { accept: 'application/json' },
           signal: AbortSignal.timeout(WAKE_TIMEOUT_MS),
@@ -96,7 +98,7 @@ export async function proxyToApi(
   return json(503, 'API_UNAVAILABLE', 'The demo server is still starting. Please try again in a moment.', {
     attempts: MAX_ATTEMPTS,
     // Public address the browser can request directly (an image request) to wake the API.
-    wakeUrl: new URL('/api/v1/ping', origin).toString(),
+    wakeUrl: new URL(PING_PATH, origin).toString(),
     lastResponse: describe(last),
     wakeProbe: wakeResult,
   });

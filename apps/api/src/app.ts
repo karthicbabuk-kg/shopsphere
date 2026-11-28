@@ -7,12 +7,12 @@ import rateLimit from 'express-rate-limit';
 import { pinoHttp } from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 import { randomUUID } from 'node:crypto';
-import { API_PREFIX } from '@shopsphere/shared-config';
+import { API_PREFIX, PING_PATH } from '@shopsphere/shared-config';
 import { env } from './config/env.js';
 import { openapi } from './config/openapi.js';
 import { logger } from './utils/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
-import { healthRouter } from './modules/health/health.routes.js';
+import { healthRouter, pingRouter } from './modules/health/health.routes.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { sellersRouter } from './modules/sellers/sellers.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
@@ -59,6 +59,7 @@ export function createApp() {
 
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi));
   app.use(`${API_PREFIX}/health`, healthRouter);
+  app.use(PING_PATH, pingRouter);
   app.use(`${API_PREFIX}/auth`, authRouter);
   app.use(`${API_PREFIX}/sellers`, sellersRouter);
   app.use(`${API_PREFIX}/admin`, adminReportsRouter);

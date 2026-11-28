@@ -1,5 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { API_PREFIX } from '@shopsphere/shared-config';
+import { API_PREFIX, PING_PATH } from '@shopsphere/shared-config';
 import type { ApiResponse } from '@shopsphere/shared-types';
 import { useAuth, type AuthUser } from '../store/auth';
 import { holdSlow, trackEnd, trackStart } from '../store/slowApi';
@@ -62,7 +62,7 @@ function wakeBeacon(error: unknown) {
   if (!target || Date.now() - wake.lastBeaconAt < 45_000) return;
   try {
     const u = new URL(target);
-    if (u.protocol !== 'https:' || u.pathname !== '/api/v1/ping') return; // only ever the known liveness endpoint
+    if (u.protocol !== 'https:' || u.pathname !== PING_PATH) return; // only ever the known liveness endpoint
     wake.lastBeaconAt = Date.now();
     const img = new Image();
     img.referrerPolicy = 'no-referrer';
