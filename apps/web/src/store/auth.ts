@@ -19,6 +19,8 @@ interface AuthState {
   accessToken: string | null;
   setSession: (accessToken: string, user: AuthUser) => void;
   clear: () => void;
+  /** Not signed in for now, but keep the hint: the server was unreachable, so the session may still be valid. */
+  markOffline: () => void;
 }
 
 /**
@@ -54,6 +56,7 @@ export const useAuth = create<AuthState>((set) => ({
     setHint(false);
     set({ accessToken: null, user: null, status: 'anon' });
   },
+  markOffline: () => set({ accessToken: null, user: null, status: 'anon' }),
 }));
 
 export const homeFor = (role: Role) =>

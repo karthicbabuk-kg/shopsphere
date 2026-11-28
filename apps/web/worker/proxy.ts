@@ -15,8 +15,9 @@ export interface ProxyEnv {
 }
 
 const WAKE_STATUSES = new Set([502, 503, 504]);
-export const MAX_ATTEMPTS = 9;
-export const RETRY_DELAY_MS = 6000;
+// About 75 s in total: a sleeping free Render instance needs a minute or more to boot, and the browser gives up at 90 s.
+export const MAX_ATTEMPTS = 16;
+export const RETRY_DELAY_MS = 5000;
 
 const json = (status: number, code: string, message: string) =>
   new Response(JSON.stringify({ success: false, error: { code, message } }), {
