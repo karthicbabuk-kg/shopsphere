@@ -101,3 +101,12 @@ The Neon project (`shopsphere`, Singapore, PostgreSQL 18, branch `production`) a
 Notes from the Neon verification:
 - Connection strings contain `sslmode=require`. The `pg` driver prints a harmless warning about it; use `sslmode=verify-full` in the Render variables to keep the same behaviour without the warning.
 - Do not run `neon deploy` or `neon env pull` without `--file .env.neon`: by default they write into `.env` and replace your local `DATABASE_URL`.
+
+## The free API sleeps: what visitors see and why
+Render stops a free web service after about 15 idle minutes. Measured behaviour (see `QA_REPORT.md`):
+- A request sent **directly** to Render wakes it and is held until it is ready (about a minute).
+- A request relayed by the Cloudflare Worker does **not** wake it: Render answers at once with a 502 and the header `x-render-routing: no-deploy`.
+
+So the site works around it: when the Worker reports `API_UNAVAILABLE`, the browser sends a plain image request straight to Render's `/api/v1/ping` (allowed by the CSP `img-src https://*.onrender.com`), shows the "demo server is waking up" notice, and retries every few seconds for up to about two minutes. Sign-in is never lost during this: a sleeping server is treated as "try again", not "signed out".
+
+**Optional: keep it awake.** `/api/v1/ping` answers without touching the database. A free uptime monitor (for example UptimeRobot or Better Stack) calling `https://<render-address>/api/v1/ping` every 5 minutes keeps Render awake around the clock. That uses roughly 744 of Render's 750 free instance hours in a 31-day month, so it only fits if this is the only free web service in the Render workspace. It does **not** wake Neon (the database still suspends after 5 idle minutes and resumes in about a second when a real request needs it). Do not point a pinger at `/api/v1/health`: that endpoint queries the database and would burn Neon's free compute hours. For a one-off demo, simply open the site two minutes beforehand instead.

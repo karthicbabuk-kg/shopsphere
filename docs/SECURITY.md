@@ -34,5 +34,5 @@ No authorization bypass, injection, mass-assignment or token-handling defect was
 - The settings cache and rate-limit counters are per server process; a multi-instance deployment would need a shared store (Redis).
 - Settlements and refunds are simulated bookkeeping; a shipment returned after settlement has no automatic clawback.
 - The password-reset token is returned in the response only when `DEMO_MODE` is on; there is no email delivery.
-- The CSP `connect-src` allows `https://*.onrender.com`; tighten it to the exact API origin when deploying.
+- The site CSP allows images from `https://*.onrender.com` so the browser can wake the sleeping free-tier API with a plain image request to `/api/v1/ping` (a public, database-free endpoint); the web code only ever requests that exact path over https.
 - Access tokens cannot be revoked before their 15-minute expiry (logging out revokes the refresh token only).

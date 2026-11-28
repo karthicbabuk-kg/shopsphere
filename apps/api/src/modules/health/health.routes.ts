@@ -15,3 +15,12 @@ healthRouter.get('/', async (_req, res) => {
     data: { status: db === 'up' ? 'ok' : 'degraded', db, uptime: Math.round(process.uptime()) },
   });
 });
+
+/**
+ * Liveness only: answers without touching the database. An uptime pinger can call this to keep a
+ * free Render instance awake without waking the (separately suspending) Neon database.
+ */
+healthRouter.get('/ping', (_req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ success: true, data: { status: 'alive', uptime: Math.round(process.uptime()) } });
+});

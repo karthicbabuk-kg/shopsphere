@@ -20,10 +20,12 @@ export interface ProxyEnv {
 }
 
 const WAKE_STATUSES = new Set([502, 503, 504]);
-// Worst case about 90 s (wake probe up to 40 s, then 12 attempts 4 s apart); the browser gives up at 120 s.
-export const MAX_ATTEMPTS = 12;
-export const RETRY_DELAY_MS = 4000;
-export const WAKE_TIMEOUT_MS = 40_000;
+// Short on purpose. A request from this Worker does not wake a sleeping Render instance (Render answers
+// 502 "no-deploy" at once instead of holding it), so long retries here only waste the visitor time. We give up
+// quickly and hand the browser the address to wake directly (see wakeUrl below); the browser then retries.
+export const MAX_ATTEMPTS = 3;
+export const RETRY_DELAY_MS = 3000;
+export const WAKE_TIMEOUT_MS = 15_000;
 
 const json = (status: number, code: string, message: string, details?: unknown) =>
   new Response(JSON.stringify({ success: false, error: { code, message, ...(details ? { details } : {}) } }), {
@@ -78,7 +80,7 @@ export async function proxyToApi(
     if (!wakeResult) {
       // One clean request, exactly the shape that wakes a sleeping instance, awaited so we do not hammer it.
       try {
-        const probe = await fetchImpl(new URL('/api/v1/health', origin), {
+        const probe = await fetchImpl(new URL('/api/v1/ping', origin), {
           method: 'GET',
           headers: { accept: 'application/json' },
           signal: AbortSignal.timeout(WAKE_TIMEOUT_MS),
@@ -93,6 +95,8 @@ export async function proxyToApi(
   }
   return json(503, 'API_UNAVAILABLE', 'The demo server is still starting. Please try again in a moment.', {
     attempts: MAX_ATTEMPTS,
+    // Public address the browser can request directly (an image request) to wake the API.
+    wakeUrl: new URL('/api/v1/ping', origin).toString(),
     lastResponse: describe(last),
     wakeProbe: wakeResult,
   });

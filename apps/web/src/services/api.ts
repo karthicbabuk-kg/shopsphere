@@ -2,7 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { API_PREFIX } from '@shopsphere/shared-config';
 import type { ApiResponse } from '@shopsphere/shared-types';
 import { useAuth, type AuthUser } from '../store/auth';
-import { trackEnd, trackStart } from '../store/slowApi';
+import { holdSlow, trackEnd, trackStart } from '../store/slowApi';
 
 /** In dev the Vite proxy forwards /api to the API; in prod VITE_API_URL points at Render. */
 const baseURL = `${import.meta.env.VITE_API_URL ?? ''}${API_PREFIX}`;
@@ -32,6 +32,11 @@ interface SessionPayload {
 
 let refreshing: Promise<SessionPayload | null> | null = null;
 
+/** The edge proxy answers API_UNAVAILABLE only when the request never reached the app. */
+function isApiUnavailable(e: AxiosError) {
+  return (e.response?.data as { error?: { code?: string } } | undefined)?.error?.code === 'API_UNAVAILABLE';
+}
+
 /** True when the last refresh failed because the server was unreachable or still starting (not because the session is invalid). */
 let lastRefreshTransient = false;
 export const refreshFailedTransiently = () => lastRefreshTransient;
@@ -43,20 +48,56 @@ const isTransient = (e: unknown) => {
 };
 const REFRESH_ATTEMPTS = 3;
 
+/**
+ * Waking a sleeping free-tier API. A request relayed by the edge proxy does not wake Render (it answers
+ * 502 at once), so when the proxy reports API_UNAVAILABLE the browser asks Render directly with a plain
+ * image request (this works because it comes from a browser, and needs no CORS), then keeps retrying
+ * every few seconds. Retrying is safe: API_UNAVAILABLE means the request never reached the app.
+ */
+export const wake = { delayMs: 8000, maxRetries: 14, lastBeaconAt: 0 };
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+function wakeBeacon(error: unknown) {
+  const url = (error as AxiosError).response?.data as { error?: { details?: { wakeUrl?: string } } } | undefined;
+  const target = url?.error?.details?.wakeUrl;
+  if (!target || Date.now() - wake.lastBeaconAt < 45_000) return;
+  try {
+    const u = new URL(target);
+    if (u.protocol !== 'https:' || u.pathname !== '/api/v1/ping') return; // only ever the known liveness endpoint
+    wake.lastBeaconAt = Date.now();
+    const img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    img.src = u.toString();
+  } catch {
+    /* malformed address: ignore */
+  }
+}
+
 async function doRefresh(): Promise<SessionPayload | null> {
   lastRefreshTransient = false;
-  for (let attempt = 1; attempt <= REFRESH_ATTEMPTS; attempt++) {
-    try {
-      const res = await bare.post<ApiResponse<SessionPayload>>('/auth/refresh');
-      if (!res.data.success) return null;
-      useAuth.getState().setSession(res.data.data.accessToken, res.data.data.user);
-      return res.data.data;
-    } catch (e) {
-      if (!isTransient(e)) return null; // 401/403: the session really is gone
-      if (attempt === REFRESH_ATTEMPTS) lastRefreshTransient = true;
+  const release = holdSlow();
+  try {
+    let transientFailures = 0;
+    for (let attempt = 1; attempt <= wake.maxRetries + 1; attempt++) {
+      try {
+        const res = await bare.post<ApiResponse<SessionPayload>>('/auth/refresh');
+        if (!res.data.success) return null;
+        useAuth.getState().setSession(res.data.data.accessToken, res.data.data.user);
+        return res.data.data;
+      } catch (e) {
+        if (!isTransient(e)) return null; // 401/403: the session really is gone
+        if (isApiUnavailable(e as AxiosError)) {
+          wakeBeacon(e);
+          await sleep(wake.delayMs);
+        } else if (++transientFailures >= REFRESH_ATTEMPTS) {
+          break;
+        }
+      }
     }
+    lastRefreshTransient = true;
+    return null;
+  } finally {
+    release();
   }
-  return null;
 }
 
 /** Single-flight: concurrent callers share one refresh request (the API rotates tokens). */
@@ -73,26 +114,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-type Retryable = InternalAxiosRequestConfig & { _retried?: boolean; _wakeRetries?: number };
-
-/** The edge proxy answers API_UNAVAILABLE only when the request never reached the app, so retrying is always safe. */
-const MAX_WAKE_RETRIES = 2;
-const isApiUnavailable = (e: AxiosError) =>
-  (e.response?.data as { error?: { code?: string } } | undefined)?.error?.code === 'API_UNAVAILABLE';
+type Retryable = InternalAxiosRequestConfig & { _retried?: boolean; _wakeRetries?: number; _release?: () => void };
 
 api.interceptors.response.use(
   (r) => {
     trackEnd(r.config);
+    (r.config as Retryable)._release?.();
     return r;
   },
   async (error: AxiosError) => {
     trackEnd(error.config);
     const original = error.config as Retryable | undefined;
     const isAuthCall = original?.url?.startsWith('/auth/');
-    if (original && isApiUnavailable(error) && (original._wakeRetries ?? 0) < MAX_WAKE_RETRIES) {
+    if (original && isApiUnavailable(error) && (original._wakeRetries ?? 0) < wake.maxRetries) {
       original._wakeRetries = (original._wakeRetries ?? 0) + 1;
+      original._release ??= holdSlow(); // banner stays on for the whole wait
+      wakeBeacon(error);
+      await sleep(wake.delayMs);
       return api(original);
     }
+    original?._release?.();
     if (error.response?.status === 401 && original && !original._retried && !isAuthCall) {
       original._retried = true;
       const session = await refreshSession();

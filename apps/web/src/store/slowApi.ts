@@ -26,3 +26,17 @@ export function trackEnd(config: object | undefined) {
   timers.delete(config);
   if (flagged.delete(config)) useSlowApi.setState((s) => ({ slow: Math.max(0, s.slow - 1) }));
 }
+
+/**
+ * Keeps the "server is waking up" banner on continuously across several retries, with no flicker in
+ * the gaps between requests. Call the returned function when the whole operation is finished.
+ */
+export function holdSlow(): () => void {
+  useSlowApi.setState((s) => ({ slow: s.slow + 1 }));
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    useSlowApi.setState((s) => ({ slow: Math.max(0, s.slow - 1) }));
+  };
+}

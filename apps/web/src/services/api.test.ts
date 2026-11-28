@@ -18,15 +18,33 @@ const adapter: AxiosAdapter = (config: InternalAxiosRequestConfig) => {
 
 // Both axios instances in api.ts are created from these defaults, so set the adapter before importing it.
 axios.defaults.adapter = adapter;
-const { api, refreshFailedTransiently, refreshSession } = await import('./api');
+const { api, refreshFailedTransiently, refreshSession, wake } = await import('./api');
 const { useAuth } = await import('../store/auth');
 
 const session = { success: true, data: { accessToken: 'tok', user: { id: 'u1', role: 'BUYER', name: 'A', email: 'a@b.co', phone: null } } };
-const unavailable = { status: 503, data: { success: false, error: { code: 'API_UNAVAILABLE', message: 'starting' } } };
+const WAKE_URL = 'https://api.example.com/api/v1/ping';
+const unavailable = (wakeUrl: string = WAKE_URL) => ({
+  status: 503,
+  data: { success: false, error: { code: 'API_UNAVAILABLE', message: 'starting', details: { wakeUrl } } },
+});
+
+// jsdom would try to load images; record what the code asks for instead.
+const beacons: string[] = [];
+globalThis.Image = class {
+  referrerPolicy = '';
+  set src(v: string) {
+    beacons.push(v);
+  }
+} as unknown as typeof Image;
+
+wake.delayMs = 0; // no real waiting in tests
 
 beforeEach(() => {
   replies = [];
   calls = [];
+  beacons.length = 0;
+  wake.maxRetries = 14;
+  wake.lastBeaconAt = 0;
   useAuth.getState().clear();
 });
 
@@ -54,23 +72,42 @@ describe('session refresh while the server is waking', () => {
   });
 });
 
-describe('API_UNAVAILABLE retry', () => {
-  it('retries the request up to twice and then succeeds', async () => {
-    replies = [unavailable, unavailable, { status: 200, data: { success: true, data: { ok: 1 } } }];
+describe('API_UNAVAILABLE: wake the server and retry', () => {
+  it('retries until the API answers, waking Render directly once', async () => {
+    replies = [unavailable(), unavailable(), unavailable(), { status: 200, data: { success: true, data: { ok: 1 } } }];
     const res = await api.get('/cart');
     expect(res.status).toBe(200);
-    expect(calls).toEqual(['GET /cart', 'GET /cart', 'GET /cart']);
+    expect(calls).toHaveLength(4);
+    expect(beacons).toEqual([WAKE_URL]); // one wake-up request, not one per retry
   });
 
-  it('gives up after the limit and reports the error', async () => {
-    replies = [unavailable, unavailable, unavailable, { status: 200, data: { success: true, data: {} } }];
+  it('gives up after the retry limit and reports the error', async () => {
+    wake.maxRetries = 2;
+    replies = [unavailable(), unavailable(), unavailable(), { status: 200, data: { success: true, data: {} } }];
     await expect(api.get('/cart')).rejects.toMatchObject({ response: { status: 503 } });
     expect(calls).toHaveLength(3);
+  });
+
+  it('only ever requests the known liveness endpoint over https', async () => {
+    for (const bad of ['http://api.example.com/api/v1/ping', 'https://api.example.com/steal?x=1', 'not a url']) {
+      replies = [unavailable(bad), { status: 200, data: { success: true, data: {} } }];
+      await api.get('/cart');
+    }
+    expect(beacons).toEqual([]);
   });
 
   it('never retries ordinary application errors', async () => {
     replies = [{ status: 409, data: { success: false, error: { code: 'CONFLICT', message: 'no stock' } } }];
     await expect(api.post('/orders', {})).rejects.toMatchObject({ response: { status: 409 } });
     expect(calls).toHaveLength(1);
+    expect(beacons).toEqual([]);
+  });
+
+  it('a sleeping server never signs the user out: refresh waits for it instead', async () => {
+    replies = [unavailable(), unavailable(), { status: 200, data: session }];
+    const s = await refreshSession();
+    expect(s?.accessToken).toBe('tok');
+    expect(refreshFailedTransiently()).toBe(false);
+    expect(beacons).toHaveLength(1);
   });
 });

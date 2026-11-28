@@ -38,7 +38,7 @@ describe('API proxy', () => {
     expect(sleep).not.toHaveBeenCalled(); // the probe succeeded, so no waiting between attempts
 
     const [probeUrl, probeInit] = fetchMock.mock.calls[1] as unknown as [URL, RequestInit];
-    expect(String(probeUrl)).toBe('https://api.example.com/api/v1/health');
+    expect(String(probeUrl)).toBe('https://api.example.com/api/v1/ping');
     expect(probeInit.method).toBe('GET');
     // The probe carries no browser, cookie or Cloudflare headers: only what is needed.
     expect(Object.keys(probeInit.headers as Record<string, string>)).toEqual(['accept']);
@@ -76,7 +76,7 @@ describe('API proxy', () => {
     const err = (await res.json()).error;
     expect(err.code).toBe('API_UNAVAILABLE');
     // Diagnostics: what the platform actually answered, so the cause is visible rather than guessed.
-    expect(err.details).toMatchObject({ attempts: MAX_ATTEMPTS, lastResponse: { status: 503, contentType: 'text/html' }, wakeProbe: { status: 503 } });
+    expect(err.details).toMatchObject({ wakeUrl: 'https://api.example.com/api/v1/ping', attempts: MAX_ATTEMPTS, lastResponse: { status: 503, contentType: 'text/html' }, wakeProbe: { status: 503 } });
   });
 
   it('refuses to run unconfigured and never forwards non-API paths', async () => {
