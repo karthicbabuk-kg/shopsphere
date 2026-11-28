@@ -144,7 +144,7 @@ test('buyer places an order with a coupon; seller fulfils it; buyer reviews and 
 
   await sp.getByRole('link', { name: 'Orders' }).click();
   await sp.getByRole('link', { name: /^SS-/ }).first().click();
-  await expect(sp.getByText(/Return requested/)).toBeVisible();
+  await expect(sp.locator('.MuiAlert-message', { hasText: 'Return requested' })).toBeVisible();
   await sp.getByRole('button', { name: 'Approve return' }).click();
   await expect(sp.getByRole('button', { name: 'Mark return received' })).toBeVisible();
   await sp.getByRole('button', { name: 'Mark return received' }).click();

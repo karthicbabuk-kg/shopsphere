@@ -9,11 +9,45 @@ import { HomePage } from '../pages/storefront/HomePage';
 
 /**
  * Route-level code splitting: only the home page ships in the first bundle. Each page below is
- * fetched when first visited. `page()` adapts a named export to React Router's lazy contract.
+ * fetched when first visited (or just before, see `preloadForPath`). `page()` adapts a named export to
+ * React Router's lazy contract and can register the page as preloadable for the paths it serves.
  */
-const page = <M extends Record<string, unknown>>(load: () => Promise<M>, name: keyof M): Pick<RouteObject, 'lazy'> => ({
-  lazy: async () => ({ Component: (await load())[name] as ComponentType }),
-});
+const preloaders: { serves: RegExp; load: () => Promise<unknown> }[] = [];
+const page = <M extends Record<string, unknown>>(
+  load: () => Promise<M>,
+  name: keyof M,
+  opts: { preload?: RegExp } = {},
+): Pick<RouteObject, 'lazy'> => {
+  if (opts.preload) preloaders.push({ serves: opts.preload, load });
+  return { lazy: async () => ({ Component: (await load())[name] as ComponentType }) };
+};
+
+const started = new Set<() => Promise<unknown>>();
+
+/**
+ * Starts downloading the page behind a link as soon as the visitor shows intent (pointing at it,
+ * focusing it or touching it), so the click that follows does not wait for the download. Nothing is
+ * fetched at page load, so the first load stays as light as before. Failures are ignored: the page
+ * simply loads on click as usual.
+ */
+export function preloadForPath(pathname: string) {
+  for (const p of preloaders) {
+    if (p.serves.test(pathname) && !started.has(p.load)) {
+      started.add(p.load);
+      void p.load().catch(() => started.delete(p.load));
+    }
+  }
+}
+
+/** A quiet backup for visitors who never hover (keyboard users): fetch every preloadable page once, late. */
+export function preloadAllRoutes() {
+  for (const p of preloaders) {
+    if (!started.has(p.load)) {
+      started.add(p.load);
+      void p.load().catch(() => started.delete(p.load));
+    }
+  }
+}
 
 const sellerNav: NavItem[] = [
   { to: '/seller', label: 'Dashboard', icon: <LayoutDashboard size={18} />, end: true },
@@ -45,9 +79,9 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/search', ...page(() => import('../pages/storefront/ListingPage'), 'ListingPage') },
-      { path: '/c/:slug', ...page(() => import('../pages/storefront/ListingPage'), 'ListingPage') },
-      { path: '/p/:slug', ...page(() => import('../pages/storefront/ProductPage'), 'ProductPage') },
+      { path: '/search', ...page(() => import('../pages/storefront/ListingPage'), 'ListingPage', { preload: /^\/search/ }) },
+      { path: '/c/:slug', ...page(() => import('../pages/storefront/ListingPage'), 'ListingPage', { preload: /^\/c\// }) },
+      { path: '/p/:slug', ...page(() => import('../pages/storefront/ProductPage'), 'ProductPage', { preload: /^\/p\// }) },
       { path: '/login', ...page(() => import('../pages/auth/LoginPage'), 'LoginPage') },
       { path: '/register', ...page(() => import('../pages/auth/RegisterPage'), 'RegisterPage') },
       { path: '/seller/register', ...page(() => import('../pages/auth/SellerRegisterPage'), 'SellerRegisterPage') },
@@ -58,7 +92,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/account', ...page(() => import('../pages/buyer/AccountPage'), 'AccountPage') },
           { path: '/wishlist', ...page(() => import('../pages/storefront/WishlistPage'), 'WishlistPage') },
-          { path: '/cart', ...page(() => import('../pages/storefront/CartPage'), 'CartPage') },
+          { path: '/cart', ...page(() => import('../pages/storefront/CartPage'), 'CartPage', { preload: /^\/cart/ }) },
           { path: '/account/orders', ...page(() => import('../pages/buyer/OrdersPage'), 'OrdersPage') },
           { path: '/account/orders/:id', ...page(() => import('../pages/buyer/OrderDetailPage'), 'OrderDetailPage') },
           { path: '/account/addresses', ...page(() => import('../pages/buyer/AddressesPage'), 'AddressesPage') },

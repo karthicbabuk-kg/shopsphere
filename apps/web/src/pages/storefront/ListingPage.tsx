@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
 import MenuItem from '@mui/material/MenuItem';
@@ -59,8 +59,16 @@ export function ListingPage() {
   const heading = data?.category?.name ?? (q ? `Results for “${q}”` : store ? 'Store products' : 'All products');
   useEffect(() => {
     document.title = `${heading} · ShopSphere`;
-    window.scrollTo({ top: 0 });
-  }, [heading, page]);
+  }, [heading]);
+  // New pages start at the top and Back restores the old position (router ScrollRestoration); the only
+  // jump we add ourselves is when the visitor turns to another page of results.
+  const shownPage = useRef(page);
+  useEffect(() => {
+    if (shownPage.current !== page) {
+      shownPage.current = page;
+      window.scrollTo({ top: 0 });
+    }
+  }, [page]);
 
   const patch = (changes: Partial<FilterState> & { sort?: string }) =>
     setParams((prev) => {

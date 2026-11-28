@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, ScrollRestoration, useNavigate } from 'react-router-dom';
+import { RouteFade } from '../components/RouteFade';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -59,10 +60,10 @@ function HeaderIcons() {
   return (
     <div className="flex items-center">
       <IconButton aria-label={`Wishlist${wl?.ids.length ? `, ${wl.ids.length} items` : ''}`} onClick={() => gate(() => navigate('/wishlist'))}>
-        <Badge badgeContent={wl?.ids.length || undefined} color="primary" max={99}><Heart size={22} /></Badge>
+        <span key={wl?.ids.length ?? 0} className="badge-bump"><Badge badgeContent={wl?.ids.length || undefined} color="primary" max={99}><Heart size={22} /></Badge></span>
       </IconButton>
       <IconButton aria-label={`Cart${cart?.itemCount ? `, ${cart.itemCount} items` : ''}`} onClick={() => gate(() => navigate('/cart'))}>
-        <Badge badgeContent={cart?.itemCount || undefined} color="warning" max={99}><ShoppingCart size={22} /></Badge>
+        <span key={cart?.itemCount ?? 0} className="badge-bump"><Badge badgeContent={cart?.itemCount || undefined} color="warning" max={99}><ShoppingCart size={22} /></Badge></span>
       </IconButton>
     </div>
   );
@@ -86,8 +87,11 @@ export function StorefrontLayout() {
         <CategoryNav />
       </header>
       <main id="main" className="flex-1">
-        <Outlet />
+        <RouteFade>
+          <Outlet />
+        </RouteFade>
       </main>
+      <ScrollRestoration />
       <Footer />
     </div>
   );

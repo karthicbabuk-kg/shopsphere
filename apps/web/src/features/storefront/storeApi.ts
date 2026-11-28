@@ -138,12 +138,15 @@ export const bustPublicCache = () => {
   cacheVersion += 1;
 };
 
-export const useProduct = (slug: string) =>
-  useQuery({
-    queryKey: ['storefront', 'product', slug],
-    queryFn: () => unwrap<{ product: ProductDetail }>(api.get(`/products/${slug}`, { params: { _v: cacheVersion || undefined } })).then((r) => r.product),
-    retry: (count, error) => count < 1 && (error as { code?: string }).code !== 'NOT_FOUND',
-  });
+export const productQueryOptions = (slug: string) => ({
+  queryKey: ['storefront', 'product', slug] as const,
+  queryFn: () => unwrap<{ product: ProductDetail }>(api.get(`/products/${slug}`, { params: { _v: cacheVersion || undefined } })).then((r) => r.product),
+  retry: (count: number, error: unknown) => count < 1 && (error as { code?: string }).code !== 'NOT_FOUND',
+  // Recently fetched (for example by a hover prefetch) counts as fresh, so opening the page is instant.
+  staleTime: 30_000,
+});
+
+export const useProduct = (slug: string) => useQuery(productQueryOptions(slug));
 
 export interface Review {
   id: string;

@@ -83,3 +83,47 @@
 @media (prefers-reduced-motion: reduce) {
   .slide-in { animation: none; }
 }
+
+/* ───────── Motion (smoothness) ─────────
+   One easing curve and short durations everywhere, so the interface feels like one continuous surface.
+   Everything below is switched off for visitors who prefer reduced motion. */
+:root {
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Page change: a quick fade and tiny rise (see RouteFade). Opacity/transform only: no layout shifts. */
+@keyframes route-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.route-fade { animation: route-in 0.22s var(--ease-out); }
+
+/* Cart and wishlist counters bump when the number changes (the element is re-created per value). */
+@keyframes badge-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.badge-bump { display: inline-flex; animation: badge-bump 0.32s var(--ease-out); }
+
+/* Press feedback on MUI buttons; keeps MUI's own colour and shadow transitions. */
+.MuiButton-root,
+.MuiIconButton-root {
+  transition:
+    background-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    color 200ms var(--ease-out),
+    transform 120ms var(--ease-out) !important;
+}
+.MuiButton-root:not(.Mui-disabled):active,
+.MuiIconButton-root:not(.Mui-disabled):active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-fade,
+  .badge-bump { animation: none; }
+  .MuiButton-root:not(.Mui-disabled):active,
+  .MuiIconButton-root:not(.Mui-disabled):active { transform: none; }
+}

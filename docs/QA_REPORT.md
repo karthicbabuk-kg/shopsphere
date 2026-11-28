@@ -82,3 +82,18 @@ Render's free instance sleeps after about 15 idle minutes. This was tested prope
 | Fix verified on the live site | after 18 idle minutes, a browser with a saved signed-in session: banner visible at 4 s, browser wake request to Render at 10.5 s, page rendered and **still signed in at 37 s**, second reload still signed in |
 
 Design that resulted: the Worker gives up after about 10 s with `API_UNAVAILABLE` plus the wake address; the browser requests that address directly (an image request, allowed by the CSP), keeps the "demo server is waking up" notice on, retries every 8 s for up to about 2 minutes, and never treats a sleeping server as a signed-out user. Only one successful post-fix cold run was recorded; Render's boot time varies (21 to 56 s direct), so plan for up to a minute.
+
+## Smoothness pass (measured, production build, CPU slowed 4x, five fresh browsers per number, medians)
+| Measure | Before | After |
+|---|---|---|
+| Layout shift while navigating (home to product to listing to product) | 0.277 | **0** |
+| Home to product page, after pointing at the card for 0.5 s | 1.39 s | 1.16 s (about 17% faster) |
+| Listing to product page, after pointing at the card for 0.5 s | 0.58 s | 0.45 s (about 23% faster) |
+| Longest blocking task during these navigations | 342 ms | 235 ms |
+| Product to category listing | 0.15 s | 0.15 s (already fast) |
+
+What caused the layout shift: the long home page was replaced by a short loading placeholder, the browser clamped the scroll position and the footer jumped into view (0.216); the placeholder was also shorter than the real page (0.06). Fixed by scrolling to the top on navigation and sizing the placeholder like the real page.
+
+A first attempt preloaded pages in the background after load. It made the first load slower (blocking time on search 650 to 1,580 ms), so it was replaced by intent-based loading (on hover, focus or touch) plus a single very late idle fetch. Lighthouse after the final version is within its run-to-run noise (the product page scored between 42 and 63 across four identical runs), and layout shift is 0.
+
+Clicks without any hover, and the very first product page render, are still CPU-bound under the artificial slowdown. On a normal machine they are a fraction of these figures.

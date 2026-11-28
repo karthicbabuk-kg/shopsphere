@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Heart } from 'lucide-react';
 import Skeleton from '@mui/material/Skeleton';
 import { useBuyerGate } from '../../features/storefront/useBuyerGate';
-import { useWishlist, useWishlistToggle, type ProductCard as Card } from '../../features/storefront/storeApi';
+import { productQueryOptions, useWishlist, useWishlistToggle, type ProductCard as Card } from '../../features/storefront/storeApi';
 import { cdn, cdnSet } from '../../utils/cdn';
 import { Price } from './Price';
 import { RatingChip } from './RatingChip';
@@ -23,9 +24,12 @@ export function ProductCard({ p, priority = false }: { p: Card; priority?: boole
   const { data: wl } = useWishlist();
   const toggle = useWishlistToggle();
   const saved = !!wl?.ids.includes(p.id);
+  const qc = useQueryClient();
+  // Pointing at or focusing a card is a strong hint the product page is next: start loading it now.
+  const warm = () => void qc.prefetchQuery(productQueryOptions(p.slug));
 
   return (
-    <article className="group relative flex h-full flex-col rounded-lg border border-line bg-white transition-shadow hover:shadow-e2 focus-within:shadow-e2">
+    <article onPointerEnter={(e) => e.pointerType === 'mouse' && warm()} onFocus={warm} className="group relative flex h-full flex-col rounded-lg border border-line bg-white transition-shadow hover:shadow-e2 focus-within:shadow-e2">
       <div className="relative">
         <Link to={`/p/${p.slug}`} className="block overflow-hidden rounded-t-lg" aria-label={p.name} tabIndex={-1}>
           <div className="relative aspect-square bg-zone">

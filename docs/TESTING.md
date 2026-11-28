@@ -15,3 +15,7 @@ Results are recorded per phase in the project status reports; this file lists wh
 - `e2e/a11y.spec.ts`: axe-core WCAG 2.0/2.1 A and AA scans of public, buyer, seller and admin pages (any violation fails).
 - Lighthouse is run manually against `pnpm --filter @shopsphere/web build` plus `vite preview` (port 4173); results are in `QA_REPORT.md`.
 - `.github/workflows/ci.yml` runs audit, typecheck, lint, tests, build and the browser suite. It has not yet been executed on GitHub.
+
+## Smoothness additions
+- `e2e/motion.spec.ts`: fade only after navigation and never on first load, reduced motion disables page and slideshow animation, new pages start at the top while Back restores the scroll position, pointing at a product card starts loading it before the click.
+- `apps/web/src/services/api.test.ts` and `apps/web/worker/proxy.test.ts`: sleeping-server handling (wake request, bounded retries, never sign out on a transient failure).

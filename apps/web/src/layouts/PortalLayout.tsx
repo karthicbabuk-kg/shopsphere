@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router-dom';
+import { RouteFade } from '../components/RouteFade';
 import Button from '@mui/material/Button';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -94,8 +95,11 @@ export function PortalLayout({ title, nav }: { title: string; nav: NavItem[] }) 
           </div>
         </header>
         <main id="main" className="min-w-0 flex-1 px-4 py-8 sm:px-8">
-          <Outlet />
+          <RouteFade>
+            <Outlet />
+          </RouteFade>
         </main>
+        <ScrollRestoration />
       </div>
     </div>
   );

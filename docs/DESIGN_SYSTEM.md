@@ -66,3 +66,17 @@ Durations 120ms (hover), 200ms (drawers/modals), 280ms (page). Easing `cubic-bez
 Tailwind for layout/spacing/utility; MUI for complex widgets (DataGrid-lite alternatives avoided; Dialog, Autocomplete, DatePicker, Menu) themed via `createTheme` from the same tokens. Preflight conflicts resolved with MUI `StyledEngineProvider injectFirst`. Fonts self-hosted (Fontsource) with `font-display: swap`.
 
 **Contrast revision (Phase 10).** An automated axe scan showed the original blue, green, amber and grey text colours fell below WCAG AA (4.5:1) on white or tinted backgrounds. The tokens above are the corrected values; the logo, illustrations and chart strokes keep the brighter brand blue because graphics only need 3:1.
+
+## Motion and smoothness (added after the Ubuntu-style smoothness request)
+The look is unchanged; the feel is tuned. One easing curve (`--ease-out`, `cubic-bezier(0.2, 0.8, 0.2, 1)`) and short durations are used everywhere.
+
+| Where | Behaviour | Source |
+|---|---|---|
+| Page change | 0.22 s fade and 6 px rise; never on the very first load (it would only delay first paint) | `RouteFade`, `.route-fade` in `index.css` |
+| Scroll | New page starts at the top, Back restores the earlier position; pagination scrolls to the top of the results | React Router `ScrollRestoration` (pages must not call `window.scrollTo` on mount) |
+| Links | The page behind a link starts downloading when you point at, focus or touch it; product cards also start loading the product data | `preloadForPath` in `app/router.tsx`, `ProductCard` |
+| Buttons | 120 ms press feedback (scale 0.97) with MUI's colour and shadow transitions kept | `index.css` |
+| Header counters | Cart and wishlist numbers bump when they change | `.badge-bump` |
+| Hero slides | 0.28 s fade-in | `.slide-in` |
+
+Rules: animate only `opacity` and `transform` (no layout shifts), keep durations under 0.35 s, and switch every animation off under `prefers-reduced-motion: reduce` (the global rule in `index.css` plus per-class rules; tested in `e2e/motion.spec.ts`).

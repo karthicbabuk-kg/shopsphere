@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-All 12 phases done. Live: https://shopsphere.karthicbabu333.workers.dev (Cloudflare Worker + Render API + Neon). Not yet exercised: .github/workflows/ci.yml on GitHub. Next steps are optional hardening (server-side rendering for mobile performance, swagger coverage, multi-instance rate limiting).
+All 12 phases done (plus a smoothness pass: no Ubuntu theme, no Ubuntu deployment, by the owner's decision). Live: https://shopsphere.karthicbabu333.workers.dev (Cloudflare Worker + Render API + Neon). Not yet exercised: .github/workflows/ci.yml on GitHub. Next steps are optional hardening (server-side rendering for mobile performance, swagger coverage, multi-instance rate limiting).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
@@ -66,3 +66,5 @@ All 12 phases done. Live: https://shopsphere.karthicbabu333.workers.dev (Cloudfl
 - Neon CLI: `neon deploy` and `neon env pull` overwrite DATABASE_URL in .env (pointing local dev at Neon). Pull into the git-ignored file instead: `neon env pull --file .env.neon --services postgres`. Neon project: flat-recipe-33154396 (aws-ap-southeast-1, Postgres 18, branch production); the schema and demo data are already applied there.
 - The pnpm override for effect MUST stay on the 3.x line (^3.22.1): effect 4 breaks the Prisma CLI config loader (migrate fails with a TypeError).
 - Neon connection strings use sslmode=require; pg prints a harmless warning about it. Use sslmode=verify-full in Render env vars to keep today's behaviour and silence it.
+- Smoothness: page changes fade via RouteFade and use router ScrollRestoration, so pages must NOT call window.scrollTo on mount (it breaks Back restoring the position). Links preload their page on hover/focus/touch (preloadForPath, register new heavy pages with the preload option in app/router.tsx); never preload at page load (it slowed first load). All motion is opacity/transform only and disabled for reduced motion (see docs/DESIGN_SYSTEM.md, e2e/motion.spec.ts).
+- E2E lessons: locator.evaluate on a missing element waits for the whole test timeout (assert existence first); Playwright scrolls elements into view before clicking, which can change the scroll position you are testing; avoid a[href^="/c/"] style selectors that also match hidden menu items.

@@ -77,7 +77,6 @@ export function ProductPage() {
     document.title = `${p.name} · ShopSphere`;
     setVariantId((cur) => (cur && p.variants.some((v) => v.id === cur) ? cur : (p.variants.find((v) => v.inStock) ?? p.variants[0])?.id ?? null));
     setQty(1);
-    window.scrollTo({ top: 0 });
   }, [p]);
 
   if (isError) {
@@ -91,7 +90,7 @@ export function ProductPage() {
   if (isLoading || !p) {
     return (
       // Mirrors the loaded layout (container, breadcrumb row, thumbnail rail, columns) so nothing jumps when data arrives.
-      <div className="mx-auto min-h-[1100px] max-w-[1280px] px-4 py-5 pb-28 lg:pb-8" aria-busy="true">
+      <div className="mx-auto min-h-[1400px] max-w-[1280px] px-4 py-5 pb-28 lg:pb-8" aria-busy="true">
         <div className="mb-4 h-5"><Skeleton width={220} /></div>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,580px)_1fr] xl:gap-12">
           <div className="flex flex-col-reverse gap-3 sm:flex-row">
