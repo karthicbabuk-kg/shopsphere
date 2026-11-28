@@ -4,7 +4,7 @@ A 15-minute guided tour for a reviewer, plus the acceptance checklist. Everythin
 
 ## 1. Before you start
 - **Live site:** https://shopsphere.karthicbabu333.workers.dev
-- **Free hosting wakes slowly.** The API sleeps after about 15 idle minutes. If nobody has used the site for a while, the first page that needs data shows a "demo server is waking up" notice and can take **a minute or more** (the site retries on its own). Open the site a couple of minutes before a live demo. Once awake it responds normally.
+- **Free hosting wakes slowly.** The API sleeps after about 15 idle minutes. If nobody has used the site for a while, the first page that needs data shows a "demo server is waking up" notice and takes **about 40 seconds to a minute** (measured: 37 s) while the site retries on its own and stays signed in. Open the site a couple of minutes before a live demo. Once awake it responds normally. An optional free uptime monitor can keep it awake (see DEPLOYMENT.md).
 - **Local copy:** `pnpm dev` (see the README) serves the same app at http://localhost:5173.
 
 ## 2. Accounts
@@ -65,7 +65,7 @@ Coupons: `WELCOME10` (10% off, up to ₹200, minimum ₹499), `FLAT100` (₹100 
 156 API tests, 28 web unit tests, 23 browser tests (including automated WCAG A/AA scans of every portal), no known dependency vulnerabilities, security review in `SECURITY.md`. Lighthouse on the live site: accessibility 98 to 100, best practices 100, SEO 100; mobile performance is modest (about 41 to 48 on the throttled lab profile) because the app is a client-rendered single-page app.
 
 ## 7. Known limitations (honest list)
-- Free-tier cold start: up to a minute or more after idle (see section 1).
+- Free-tier cold start: about 40 seconds to a minute after 15 idle minutes (see section 1 and QA_REPORT.md).
 - Mobile Lighthouse performance is modest; server-side rendering would be the next step.
 - Settlements: a shipment returned after it was settled has no automatic clawback.
 - Cash-on-delivery returns before the whole order is delivered record no refund (nothing was collected yet).
@@ -93,5 +93,4 @@ Coupons: `WELCOME10` (10% off, up to ₹200, minimum ₹499), `FLAT100` (₹100 
 | Demo credentials documented only for seeded accounts | Done | `DEMO_CREDENTIALS.md` |
 | Automated tests and QA reported honestly | Done | `TESTING.md`, `QA_REPORT.md` |
 | Free-tier deployment (Neon, Render, Cloudflare) verified live | Done, with the cold-start caveat | `DEPLOYMENT.md`, live checks in `QA_REPORT.md` |
-| Self-hosting guide for Ubuntu | Written, **not executed on a real server** | `UBUNTU_DEPLOYMENT.md` |
 | CI pipeline | Written, **never run on GitHub** | `.github/workflows/ci.yml` |

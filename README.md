@@ -2,7 +2,7 @@
 
 Premium multi-vendor e-commerce and inventory management demo: a buyer storefront, a seller portal and a super-admin portal on one Express API and one PostgreSQL database. Payments are simulated; no real money moves, and no card or UPI details are ever collected.
 
-**Live demo:** https://shopsphere.karthicbabu333.workers.dev (free hosting: the first visit after a quiet period can take up to a couple of minutes while the API wakes up; the page says so). Logins and a guided tour are in [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md).
+**Live demo:** https://shopsphere.karthicbabu333.workers.dev (free hosting: the first visit after a quiet period takes about 40 seconds to a minute while the API wakes up; the page says so). Logins and a guided tour are in [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md).
 
 > Status: all 12 build phases are complete. Checks at the last full run: 156 API tests, 27+ web unit tests, 23 browser tests including automated accessibility scans, no known dependency vulnerabilities. See [`docs/QA_REPORT.md`](docs/QA_REPORT.md) for measured results and limits.
 
@@ -16,7 +16,7 @@ Premium multi-vendor e-commerce and inventory management demo: a buyer storefron
 React 19 · TypeScript 5.9 · Vite 8 · Tailwind 4 · MUI 9 · TanStack Query · React Hook Form + Zod · Recharts · Lucide  
 Node 22 · Express 5 · Prisma 7 · PostgreSQL · Zod 4 · JWT with rotating refresh tokens · Pino · Vitest · Supertest · Playwright · axe-core
 
-Hosting used for the live demo: Neon (PostgreSQL) + Render (API) + Cloudflare (website and `/api` proxy) + Cloudinary (images), all on free plans. An Ubuntu self-hosting guide is also included.
+Hosting used for the live demo: Neon (PostgreSQL) + Render (API) + Cloudflare (website and `/api` proxy) + Cloudinary (images), all on free plans.
 
 ## Quick start (Windows/macOS/Linux)
 Prerequisites: Node 22+, pnpm 12, Docker Desktop.
@@ -45,7 +45,7 @@ If port 5433 is taken, change `POSTGRES_PORT` and the ports in `DATABASE_URL`/`T
 | API reference | [`docs/API_SPECIFICATION.md`](docs/API_SPECIFICATION.md) |
 | Design | [`docs/REFERENCE_DESIGN_ANALYSIS.md`](docs/REFERENCE_DESIGN_ANALYSIS.md), [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md), [`docs/UX_GUIDELINES.md`](docs/UX_GUIDELINES.md) |
 | Security and quality | [`docs/SECURITY.md`](docs/SECURITY.md), [`docs/TESTING.md`](docs/TESTING.md), [`docs/QA_REPORT.md`](docs/QA_REPORT.md) |
-| Deploying | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) (free cloud), [`docs/FREE_HOSTING_COMPARISON.md`](docs/FREE_HOSTING_COMPARISON.md), [`docs/UBUNTU_DEPLOYMENT.md`](docs/UBUNTU_DEPLOYMENT.md) (own server), [`docs/ENVIRONMENT_VARIABLES.md`](docs/ENVIRONMENT_VARIABLES.md) |
+| Deploying | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) (free cloud), [`docs/FREE_HOSTING_COMPARISON.md`](docs/FREE_HOSTING_COMPARISON.md), [`docs/ENVIRONMENT_VARIABLES.md`](docs/ENVIRONMENT_VARIABLES.md) |
 | Roadmap and history | [`docs/PROJECT_OVERVIEW.md`](docs/PROJECT_OVERVIEW.md) |
 
 ## Everything here is fictional

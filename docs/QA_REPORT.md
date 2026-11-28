@@ -70,3 +70,15 @@ Lighthouse on the live site (mobile = simulated slow 4G with 4x CPU slowdown):
 | Product | 45 | 71 to 83 | 100 | 100 | 100 |
 
 Honest reading: the live mobile numbers are lower than the local-preview numbers earlier in this report (53 to 64), not higher as hoped. The cost is JavaScript execution on a throttled CPU before the first content can render (LCP render delay about 5 s), plus a fetch for the page data after the script loads. Lab scores also vary between runs (the figures above are single runs; Lighthouse sometimes fails to record a trace and has to be retried). Real devices on normal connections will feel faster than the throttled lab. Meaningful improvement would need server-side rendering or pre-rendering the public pages.
+
+## Cold start of the free API (measured, 2026-11-28)
+Render's free instance sleeps after about 15 idle minutes. This was tested properly because the first attempts failed:
+
+| Finding | Evidence |
+|---|---|
+| A request sent **directly** to Render wakes it and is held until ready | direct request after idle: 200 after 21.7 s and 56.0 s (process uptime 12 to 13 s) |
+| A request relayed by the Cloudflare Worker does **not** wake it | Render answered the Worker with 502 and `x-render-routing: no-deploy` immediately; three overnight tests and a second test after a code change all stayed unavailable for the full 4 minutes (diagnostics were added to the Worker's error to see this) |
+| A bug of mine hid the first fix | the wake endpoint was mounted at `/api/v1/health/ping` while every client used `/api/v1/ping`; fixed by one shared `PING_PATH` constant used by the API, proxy, browser and all tests |
+| Fix verified on the live site | after 18 idle minutes, a browser with a saved signed-in session: banner visible at 4 s, browser wake request to Render at 10.5 s, page rendered and **still signed in at 37 s**, second reload still signed in |
+
+Design that resulted: the Worker gives up after about 10 s with `API_UNAVAILABLE` plus the wake address; the browser requests that address directly (an image request, allowed by the CSP), keeps the "demo server is waking up" notice on, retries every 8 s for up to about 2 minutes, and never treats a sleeping server as a signed-out user. Only one successful post-fix cold run was recorded; Render's boot time varies (21 to 56 s direct), so plan for up to a minute.

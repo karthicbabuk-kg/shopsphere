@@ -22,8 +22,8 @@ Neutral canvas + single blue accent, DM Sans/DM Mono, tonal rounded cards, proce
 | 8 | **Done.** Checkout (addresses, coupons, demo payments), multi-seller orders, tracking, seller fulfilment, cancel/return, review submission | multi-seller order test passes |
 | 9 | **Done.** Analytics, reports, commissions, CSV export, charts | numbers reconcile with DB |
 | 10 | **Done.** QA, Playwright E2E, accessibility, responsive, security review, performance | full suite green; see QA_REPORT.md and SECURITY.md |
-| 11 | **Prepared.** Neon, Render, Cloudflare Pages: bundled API, Blueprint, same-origin proxy, waking banner, deployment guide. Live deployment and live E2E pending account creation | live E2E OK |
-| 12 | Demo guide, credentials, final docs | acceptance checklist complete |
+| 11 | **Done.** Neon, Render, Cloudflare: bundled API, Blueprint, same-origin Worker proxy, cold-start handling, live verification (see QA_REPORT.md) | live checks passed |
+| 12 | **Done.** Demo guide with acceptance checklist, README and architecture refresh | acceptance checklist complete (one item written but not executed: GitHub CI) |
 
 ## Risks and notes
 - Render free tier sleeps: UI shows a "waking server" state; document cold-start.

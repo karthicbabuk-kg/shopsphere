@@ -52,7 +52,6 @@ As specified in the brief (`apps/web`, `apps/api`, `packages/shared-{types,valid
 | API | `pnpm dev` (tsx watch) | Render free web service (`node apps/api/dist/server.js`), health check `/api/v1/health` |
 | Web | Vite dev server, proxies `/api` | Cloudflare Workers static assets; a Worker proxies `/api/*` so the login cookie is first-party |
 | Images | Cloudinary | Cloudinary |
-| Self-hosted alternative | | Ubuntu VPS: nginx + systemd + local PostgreSQL (see `UBUNTU_DEPLOYMENT.md`) |
 
 ## Versions (as built)
 Node 22 · pnpm 12 · React 19 · Vite 8 · TypeScript 5.9 · Prisma 7 (adapter-pg) · Express 5 · Zod 4 · MUI 9 · Tailwind 4 · PostgreSQL 16 locally, 18 on Neon. `CLAUDE.md` explains why some are pinned.

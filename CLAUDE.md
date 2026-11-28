@@ -31,7 +31,7 @@ Multi-vendor e-commerce demo (buyer / seller / admin). Read `docs/PROJECT_OVERVI
 - PowerShell: `R` is an alias for Invoke-History; do not name helpers with built-in aliases.
 
 ## Status
-Phases 1-11 prepared (deployment artifacts done and locally verified; the live deployment needs the owner to create Neon, Render and Cloudflare accounts, see docs/DEPLOYMENT.md). Next: finish live deployment and checks, then Phase 12 (final demo guide, Ubuntu guide, remaining docs).
+All 12 phases done. Live: https://shopsphere.karthicbabu333.workers.dev (Cloudflare Worker + Render API + Neon). Not yet exercised: .github/workflows/ci.yml on GitHub. Next steps are optional hardening (server-side rendering for mobile performance, swagger coverage, multi-instance rate limiting).
 
 ## Gotchas
 - `.env` values containing `#` are truncated by Node's env loader (treated as comment).
